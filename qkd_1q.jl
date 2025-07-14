@@ -35,6 +35,16 @@ function SARG04()
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
 
+
+function E91()
+    name = "E91"
+    qa = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+    list_rho = [[1, 0], [0,1] , [1,-sqrt(3)]/2, [sqrt(3),1]/2, [1,sqrt(3)]/2, [sqrt(3),-1]/2]
+    povm = [[1, 0]/sqrt(3), [0,1]/sqrt(3) , [1,-sqrt(3)]/2*sqrt(3), [sqrt(3),1]/2*sqrt(3), [1,sqrt(3)]/2*sqrt(3), [sqrt(3),-1]/2*sqrt(3)]
+    f = [[1/3, 1/3, 1/3],[[1,2], [3,4], [5,6]]]
+    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+end
+
 ############
 
 function qkd_1q_sdp(x, qa, list_rho, povm, f)
