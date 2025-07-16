@@ -17,6 +17,16 @@ function BB84()
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
 
+function E91()
+    name = "E91"
+    qa = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+    list_rho = [[1, 0], [0,1] , [1,-sqrt(3)]/2, [sqrt(3),1]/2, [1,sqrt(3)]/2, [sqrt(3),-1]/2]
+    povm = [[0, 1]/sqrt(3), [1,0]/sqrt(3) , [sqrt(3),1]/(2*sqrt(3)), [1,-sqrt(3)]/(2*sqrt(3)),
+            [sqrt(3),-1]/(2*sqrt(3)), [1,sqrt(3)]/(2*sqrt(3))]
+    f = [[1/3, 1/3, 1/3],[[1,2], [3,4], [5,6]]]
+    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+end
+
 function B92()
     name = "B92"
     qa = [1/2, 1/2]
@@ -35,20 +45,11 @@ function SARG04()
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
 
-
-function E91()
-    name = "E91"
-    qa = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
-    list_rho = [[1, 0], [0,1] , [1,-sqrt(3)]/2, [sqrt(3),1]/2, [1,sqrt(3)]/2, [sqrt(3),-1]/2]
-    povm = [[1, 0]/sqrt(3), [0,1]/sqrt(3) , [1,-sqrt(3)]/2*sqrt(3), [sqrt(3),1]/2*sqrt(3), [1,sqrt(3)]/2*sqrt(3), [sqrt(3),-1]/2*sqrt(3)]
-    f = [[1/3, 1/3, 1/3],[[1,2], [3,4], [5,6]]]
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
-end
-
 ############
 
 function qkd_1q_sdp(x, qa, list_rho, povm, f)
     """
+        x - point
         qa - distribution of Alice
         list_rho - list of states
         povm - Bob's POVM
@@ -100,9 +101,6 @@ end
 
 function save_and_draw(methods, file)
     interval, outs = results(methods)
-    # open("detBB84.txt","w") do io
-    #     println(io, "$(ListQ),\n$(ListR)")
-    # end
 
     Pl=plot(interval, interval, color="black",  aspect_ratio=1, label = "\$\\mathbb{P}(B=A|S)\$" )
     for i in eachindex(methods)
@@ -117,6 +115,7 @@ function save_and_draw(methods, file)
 end
 
 ############
+# test protocols
 
 function test()
     name = "test"
@@ -152,8 +151,6 @@ function test4(f)
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
 
-###########
-
 function random(r,f)
     name = "random"
     qa = rand(r)+0.1*ones(r)
@@ -178,19 +175,53 @@ function circle(r, f)
 end
 
 ###########
-# 2x2 analysis
-function case22(p,q,a)
-    name = "case22_"
-    qa = [1/4, 1/4, 1/4, 1/4]
-    list_rho = [[1, 0], [0,1] , [1,1]/sqrt(2), [1,-1]/sqrt(2)]
-    povm = [[0,1]/sqrt(2), [1,0]/sqrt(2), [1,-1]/2, [1,1]/2]
-    f = [[1/2, 1/2],[[1,2], [3,4]]]
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
-end
+# circle analysis
+# function test(a)
+#     name = "hehe"
+#     qa = [1, 1, 1, 1]
+#     list_rho = [[0, 1], [1,0], [cos(a), sin(a)], [sin(a), -cos(a)]]
+#     povm = [[1,0], [0,1], [sin(a), -cos(a)], [cos(a), sin(a)]]
+#     f = [[1,1],[[1,2],[3,4]]]
+#     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+# end
+
+# save_and_draw(append!([BB84(), SARG04()], 
+# [test(a/10) for a=5:-1:1]), "case_22")
 
 
 ###########
+# circle analysis
+# function case(a,b,p1,p2,q1,q2,xx,yy)
+#     name = "case"
+#     qa = [1, p1, p2]
+#     list_rho = [[1, 0], [cos(a), sin(a)], [cos(b), sin(b)]]
+#     povm = [[0,1], q1*[sin(a), -cos(a)], q2*[sin(b), -cos(b)]]
+#     f = [[1,xx,yy],[[1,2],[1,3],[2,3]]]
+#     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+# end
 
+# specs = [[pi/2, pi/4,1+0.1*(rand()-0.5),1+0.1*(rand()-0.5),1+0.1*(rand()-0.5),
+# 1+0.1*(rand()-0.5),1+0.1*(rand()-0.5),1+0.1*(rand()-0.5)] for _=1:4]
+# save_specs=[pi/3, 2*pi/3,1,1,1,1,1,1]
+
+# save_and_draw(append!([BB84(), SARG04(), case22(1,1,pi/17), case(save_specs...)], 
+# [case(z...) for z in specs]), "case_22")
+
+
+###########
+# 2x2 analysis
+# function case22(p,q,a)
+#     name = "case22_"
+#     qa = [1, p]
+#     list_rho = [[1, 0], [cos(a), sin(a)]]
+#     povm = [[0,1], q*[sin(a), -cos(a)]]
+#     f = [[1],[[1,2]]]
+#     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+# end
+
+# save_and_draw(append!([case22(1+yy/3,1+xx/3,pi/15) for xx in -1:1:1 for yy in -1:1:1],[SARG04(), case22(1,1,pi/15)]), "case_22")
+
+###########
 # fun with BB84
 # n = 6
 # c = collect(combinations(collect(combinations([1,2,3,4],2)), n))
@@ -201,10 +232,11 @@ end
 # BB84(),
 # ], "BB84_f")
 
+###########
 # known protocols
-# save_and_draw( [BB84(), B92(), SARG04()], "known")
+# save_and_draw( [BB84(), E91(), B92(), SARG04()], "known")
 
-
+###########
 # qkd_1q_sdp(0.9, test3([[1,1,1,1,1,1],[[1,2],[1,3],[1,4],[2,3], [2,4],[3,4]]])[1]...)
 # minimum(qkd_1q_sdp(0.9, test3([rand(6),[[1,2],[1,3],[1,4],[2,3], [2,4],[3,4]]])[1]...) for _=1:1000)
 
