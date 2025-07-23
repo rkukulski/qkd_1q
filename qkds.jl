@@ -190,3 +190,100 @@ end
 
 #     return [qa, [x*x' for x in list_rho], [x*x' for x in povm_states], f], name
 # end
+function Qutrit()
+    name = "Qutrit"
+
+    omega = exp(im * 2 * pi / 3)
+
+    omega_sq = omega^2
+
+    list_rho = [
+        [1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im], # |0>
+        [0.0 + 0.0im, 1.0 + 0.0im, 0.0 + 0.0im], # |1>
+        [0.0 + 0.0im, 0.0 + 0.0im, 1.0 + 0.0im], # |2>
+
+        # Fourier Basis (X-basis), Mutually Unbiased to Z-basis
+        (1/sqrt(3.0)) * [1.0 + 0.0im, 1.0 + 0.0im, 1.0 + 0.0im], # |f0>
+        (1/sqrt(3.0)) * [1.0 + 0.0im, omega, omega_sq],         # |f1>
+        (1/sqrt(3.0)) * [1.0 + 0.0im, omega_sq, omega]          # |f2>
+    ]
+
+    qa = [1/6, 1/6, 1/6, 1/6, 1/6, 1/6]
+
+
+ povm = [
+       
+        list_rho[2],
+        list_rho[3], 
+        list_rho[1], 
+
+        list_rho[5], 
+        list_rho[6],
+        list_rho[4]  
+    ]
+
+    f = [[1/2, 1/2], [[1,2,3], [4,5,6]]]
+    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+end
+
+#https://arxiv.org/pdf/2005.05463
+#QKD a little different than Qutrit
+#https://arxiv.org/pdf/quant-ph/0510208
+#Wyglada na troche zmieniony E91
+
+function OrthogonalQKD()
+    #https://arxiv.org/pdf/quant-ph/0102060
+    name = "OrthogonalQKD"
+    qa = fill(1/9, 9)
+    list_rho = [
+        kron([1, 0, 0], [complex(1/sqrt(2), 0.0), complex(1/sqrt(2), 0.0), 0]), # |1>_A (a|1>_B + b|0>_B) with a=b=1/sqrt(2)
+        kron([1, 0, 0], [complex(1/sqrt(2), 0.0), complex(-1/sqrt(2), 0.0), 0]), # |1>_A (b*|1>_B - a*|0>_B) with a=b=1/sqrt(2)
+        kron([complex(1/sqrt(2), 0.0), complex(1/sqrt(2), 0.0), 0], [0, 0, 1]), # (c|1>_A + d|0>_A) |2>_B with c=d=1/sqrt(2)
+        kron([complex(1/sqrt(2), 0.0), complex(-1/sqrt(2), 0.0), 0], [0, 0, 1]), # (d*|1>_A - c*|0>_A) |2>_B with c=d=1/sqrt(2) (adjusted based on pattern, as Ψ4 wasn't explicitly written in text)
+        kron([0, 0, 1], [complex(1/sqrt(2), 0.0), 0, complex(1/sqrt(2), 0.0)]), # |2>_A (e|0>_B + f|2>_B) with e=f=1/sqrt(2)
+        kron([0, 0, 1], [complex(1/sqrt(2), 0.0), 0, complex(-1/sqrt(2), 0.0)]), # |2>_A (f*|0>_B - e*|2>_B) with e=f=1/sqrt(2)
+        kron([complex(1/sqrt(2), 0.0), 0, complex(1/sqrt(2), 0.0)], [0, 1, 0]), # (g|0>_A + h|2>_A) |1>_B with g=h=1/sqrt(2)
+        kron([complex(1/sqrt(2), 0.0), 0, complex(-1/sqrt(2), 0.0)], [0, 1, 0]), # (h*|0>_A - g*|2>_A) |1>_B with g=h=1/sqrt(2)
+        kron([1, 0, 0], [1, 0, 0])  # |0>_A |0>_B
+    ]
+    povm = [x*x' for x in list_rho]
+        """
+        When particle A and B are both in the hand of Bob, he
+makes a collective orthogonal measurement under the basis of Eqs. (1) to determine which state the two-particle
+system has been prepared"""
+    f = [[1.0], [[1, 2, 3, 4, 5, 6, 7, 8, 9]]]
+
+    return [qa, [x*x' for x in list_rho], povm, f], name
+end
+
+function Loss_Tolerant_QKD(p_ZA::Float64 = 0.7)
+    #https://arxiv.org/pdf/2412.09684
+    name = "Loss_Tolerant_QKD"
+    list_rho = [
+        [1, 0],                
+        [0, 1],                
+        [1/sqrt(2), 1/sqrt(2)]  
+    ]
+    
+    p_XA = 1-p_ZA
+    qa = [
+        p_ZA * 0.5, 
+        p_ZA * 0.5,
+        p_XA * 1.0  
+    ]
+    
+    povm = [
+        [0, 1],                
+        [1, 0],                 
+        [1/sqrt(2), -1/sqrt(2)] 
+    ]
+    
+    f_distribution = [p_ZA, p_XA]
+    
+    f_points_Z_basis = [1, 2] 
+    f_points_X_basis = [3]    
+    
+    f = [f_distribution, [f_points_Z_basis, f_points_X_basis]]
+    
+    return [qa, [x*x' for x in list_rho], povm, f], name
+end
