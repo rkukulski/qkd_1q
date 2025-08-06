@@ -45,7 +45,7 @@ end
 
 #W pewnym artykule taki asymetryczny sposob pomiaru jest tez stosowany niby w Twin Field
 function T12(px::Float64 = 1/16)
-    name = "T12"
+    name = "T12_$px"
 #https://doi.org/10.1364/OE.21.024550
 #Wybor bazy nie jest tak samo prawdopodobny jak w BB84
     pz = 1 - px
@@ -94,7 +94,7 @@ function Chau15()
         [1/sqrt(2), 1/sqrt(2), 0, 0]          
     ]
 
-    f = [[1.0],[[1,2,3,4]]]
+    f = [ones(6)/6,[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]]
 
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
@@ -111,8 +111,8 @@ function K_State_P1(K_val::Int, a_val::Float64)
 
     list_rho = Vector{Vector{ComplexF64}}(undef, K_val)
     for k = 0:K_val-1
-        theta_k = (2.0 * pi * k) / K_val
-        angle = a_val + theta_k
+        θ = (2.0 * pi * k) / K_val
+        angle = a_val + θ
         # |ψk⟩ = cos(a+θk)|0⟩ + sin(a+θk)|1⟩
         list_rho[k+1] = [cos(angle), sin(angle)]
     end
@@ -120,18 +120,53 @@ function K_State_P1(K_val::Int, a_val::Float64)
     # POVMs  M_k = (2/K) |ψk_perp⟩⟨ψk_perp|.
     povm = Vector{Vector{ComplexF64}}(undef, K_val)
     for k = 0:K_val-1
-        theta_k = (2.0 * pi * k) / K_val
-        angle = a_val + theta_k
+        θ = (2.0 * pi * k) / K_val
+        angle = a_val + θ
         # |ψk_perp⟩ = sin(a+θk)|0⟩ - cos(a+θk)|1⟩ (a state orthogonal to |ψk⟩)
         povm_vector = [sin(angle), -cos(angle)]
         povm[k+1] = povm_vector * sqrt(2.0/K_val)
     end
 
-    f = [[1.0], [collect(1:K_val)]]
+    states_pairs = Vector{Vector{Int}}(undef, K_val)
+    
+    for k = 1:K_val
+    next_k = (k % K_val) + 1
+    states_pairs[k] = [k, next_k]
+    end
+
+    f = [fill(1.0/K_val, K_val), states_pairs]
 
     return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
 end
+function K_State_P2(K_val::Int, a_val::Float64)
+    name = "K_State_P1$(K_val)_a$(round(a_val, digits=3))"
+    #Nie wiem jak mozna zrobic P2, tam nie mamy juz povms a unambigious measurement
+    #1/K prob.
+    qa = fill(1.0/K_val, K_val)
 
+    list_rho = Vector{Vector{ComplexF64}}(undef, K_val)
+    for k = 0:K_val-1
+        θ = (2.0 * pi * k) / K_val
+        angle = a_val + θ
+        # |ψk⟩ = cos(a+θk)|0⟩ + sin(a+θk)|1⟩
+        list_rho[k+1] = [cos(angle), sin(angle)]
+    end
+
+    # POVMs  M_k = (2/K) |ψk_perp⟩⟨ψk_perp|.
+    povm = Vector{Vector{ComplexF64}}(undef, K_val)
+    for k = 0:K_val-1
+        θ = (2.0 * pi * k) / K_val
+        angle = a_val + θ
+        # |ψk_perp⟩ = sin(a+θk)|0⟩ - cos(a+θk)|1⟩ (a state orthogonal to |ψk⟩)
+        povm_vector = [sin(angle), -cos(angle)]
+        povm[k+1] = povm_vector * sqrt(2.0/K_val)
+    end
+
+    
+       f = [[1.0], [collect(1:K_val)]]
+
+    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+end
 function ThreeStateQKD()
     #http://dx.doi.org/10.1080/09500340008244056
     #dla stanu 1. też poodaje p=2/3
