@@ -1,75 +1,92 @@
 using JSON
 using LinearAlgebra
 
-struct QKDProtocol 
+mutable struct QKDProtocol 
     name::String
     qa::Vector{Float64}
     rhos::Vector{Vector{ComplexF64}}
-    povms::Vector{Vector{ComplexF64}}
-    f::Tuple{Vector{Float64}, Vector{Vector{Int}}}
+    povms::Vector{Matrix{ComplexF64}}
+    dim::Int64
+    aliceBits::Vector{Bool}
+    bobBits::Vector{Bool}
+    successMatrix::Matrix{Bool}
 
-    function QKDProtocol(name::String, qa::Vector{Float64}, list_rho::Vector{Vector{ComplexF64}},
-                         povm::Vector{Vector{ComplexF64}}, f::Tuple{Vector{Float64}, Vector{Vector{Int}}})
+
+    function QKDProtocol(name::String, qa::Vector{Float64}, list_rho::Vector{Vector{T1}},
+                         povm::Vector{Matrix{T2}}) where {T1<:Number, T2<:Number}
+        list_rho_c = [ComplexF64.(x) for x in list_rho]
+        povm_c = [ComplexF64.(x) for x in povm]
         if !isapprox(sum(qa), 1.0; atol=1e-8)
             error("qa must sum to 1")
         end
-        if !isapprox(sum(f[1]), 1.0; atol=1e-8)
-            error("f[1] must sum to 1")
+        dim = length(list_rho_c[1])
+        if dim != size(povm_c[1], 1)
+            error("different dimensions of states and povm")
         end
-        dim = length(list_rho[1])
         total = zeros(ComplexF64, dim, dim)
-        for x in povm
-            total += x * x'
+        for x in povm_c
+            total += x 
         end
         if !isapprox(total, I, atol=1e-8)
             error("POVM does not sum to identity")
         end
+    new(name, qa, list_rho_c, povm_c, dim, Vector{Bool}(), Vector{Bool}(), Array{Bool}(undef, 0, 0))
+    end
 
-        new(name, qa, list_rho, povm, f)
+    
+end
+
+function setBitsBB84!(qkd::QKDProtocol)
+    qkd.aliceBits = [(i+1) % 2 for i in 1:length(qkd.rhos)]
+    qkd.bobBits = [(i+1) % 2 for i in 1:length(qkd.rhos)]
+    return nothing
+end
+
+function setBitsCustom!(qkd::QKDProtocol, Alice, Bob)
+    if length(Alice) != length(qkd.rhos) || length(Bob) != length(qkd.povms)
+        error("wrong dimensions")
+    else
+        qkd.aliceBits = Alice
+        qkd.bobBits = Bob
+    end
+    return nothing
+end
+
+function decisionFunctionLikeBB84!(qkd::QKDProtocol; tol=1e-8)
+    Matrix = falses(length(qkd.rhos), length(qkd.povms))
+    for (i, ρ) in enumerate(qkd.rhos)
+        for (j, ψ) in enumerate(qkd.povms)
+            measurement = tr(ψ * (ρ * ρ'))
+            if isapprox(measurement, 1.0; atol=tol) || isapprox(measurement, 0.0; atol=tol)
+                Matrix[i, j] = true
+            end
+        end
+    end
+    qkd.successMatrix = Matrix
+    return nothing
+end
+
+function decisionFunctionCustomBuild!(qkd::QKDProtocol, Matrix::Matrix{Bool})
+    if size(Matrix, 1) != length(qkd.rhos) || size(Matrix, 2) != length(qkd.povms)
+        error("wrong dimensions")
+    else
+        qkd.successMatrix = Matrix
+    end
+    return nothing
+end
+
+function getBits(qkd::QKDProtocol, idA, idB)
+    if qkd.successMatrix[idA, idB]
+        return true, Int(qkd.aliceBits[idA]), Int(qkd.bobBits[idB])
+    else
+        return false, nothing, nothing
     end
 end
 
-
-
-function complex_to_jsonvec(vecs::Vector{Vector{ComplexF64}})
-    [ [ [real(x), imag(x)] for x in v ] for v in vecs ]
+function getρ(qkd::QKDProtocol)
+    return [x*x' for x in qkd.rhos]
 end
 
-
-function json_to_complexvec(vecs)
-    [ [ ComplexF64(x[1], x[2]) for x in v ] for v in vecs ]
-end
-
-function save_protocol(protocol::QKDProtocol, filename::String)
-    data = Dict(
-        "name" => protocol.name,
-        "qa" => protocol.qa,
-        "rhos" => complex_to_jsonvec(protocol.rhos),
-        "povms" => complex_to_jsonvec(protocol.povms),
-        "f" => protocol.f
-    )
-    open(filename, "w") do io
-        JSON.print(io, data)
-    end
-end
-
-function load_protocol(filename::String)
-    data = JSON.parsefile(filename)
-
-    rhos = json_to_complexvec(data["rhos"])
-    povms = json_to_complexvec(data["povms"])
-
-    f1 = Float64.(data["f"][1])
-    f2 = [Int.(pair) for pair in data["f"][2]]
-
-    return QKDProtocol(
-        data["name"],
-        Float64.(data["qa"]),
-        rhos,
-        povms,
-        (f1, f2)
-    )
-end
 
 
 qkd = QKDProtocol(
@@ -82,13 +99,19 @@ qkd = QKDProtocol(
         [1+0im, -1+0im]/sqrt(2)
     ],
     [
-        [0+0im, 1+0im]/sqrt(2),
-        [1+0im, 0+0im]/sqrt(2),
-        [1+0im, -1+0im]/2,
-        [1+0im, 1+0im]/2
+        ([1+0im, 0+0im]/sqrt(2)) * ([1+0im, 0+0im]/sqrt(2))',
+        ([0+0im, 1+0im]/sqrt(2)) * ([0+0im, 1+0im]/sqrt(2))',
+        ([1+0im, 1+0im]/2) * ([1+0im, 1+0im]/2)',
+        ([1+0im, -1+0im]/2) * ([1+0im, -1+0im]/2)',
     ],
     ([1/2, 1/2], [[1, 2], [3, 4]])
 )
 
-save_protocol(qkd, "qkd.json")
-protocol2 = load_protocol("qkd.json")
+setBitsBB84!(qkd)
+decisionFunctionLikeBB84!(qkd)
+
+println("Rhos: ", qkd.rhos)
+println("POVMs: ", qkd.povms)
+println("Alice bits: ", qkd.aliceBits)
+println("Bob bits: ", qkd.bobBits)
+println("Success matrix: ", qkd.successMatrix)
