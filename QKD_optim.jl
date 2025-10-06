@@ -9,7 +9,7 @@ const MOI = Convex.MOI
 # getBits(qkd::QKDProtocol, idA, idB) -> (t/f, ka, kb, g)
 # (t, 1, 0, 3)
 # (f, no, no, no)
-# dim -> nie wiem co to jest ale niech bedzie to liczba grup sukcesu
+
 
 function y1(qkd::QKDProtocol)
     a = sum(
@@ -42,7 +42,7 @@ end
 
 function ye(qkd::QKDProtocol)
     function f(x::Real)
-        S = qkd.dim
+        S = qkd.dimS
         list_rho = [x*x' for x in qkd.rhos]
         povm = [x*x' for x in qkd.povms]
 
