@@ -1,0 +1,33 @@
+using LinearAlgebra
+
+mutable struct SingleGroup
+    aliceStates::Vector{Int64}
+    aliceBits::Vector{Bool}
+    BobStates::Vector{Int64}
+    BobBits::Vector{Bool}
+    function SingleGroup(aliceStates::Vector{Int64}, aliceBits::Vector{Bool},BobStates::Vector{Int64},BobBits::Vector{Bool})
+        new(aliceStates, aliceBits,BobStates,BobBits)
+    end
+end
+
+
+
+function createGroupBB84(aliceStart::Int64, aliceEnd::Int64, bobStart::Int64, bobEnd::Int64)
+    aliceStates = [i for i in range(aliceStart,aliceEnd)]
+    aliceBits = [(i+1) % 2 for i in range(aliceStart,aliceEnd)]
+    bobStates = [i for i in range(bobStart,bobEnd)]
+    bobBits = [(i+1) % 2 for i in range(aliceStart,aliceEnd)]
+    return SingleGroup(aliceStates, aliceBits, bobStates, bobBits)
+end
+
+function createGroupCustom(aliceStart::Int64, aliceEnd::Int64, bobStart::Int64, bobEnd::Int64, aliceBits::Vector{Bool}, bobBits::Vector{Bool})
+    aliceStates = [i for i in range(aliceStart,aliceEnd)]
+    if length(aliceBits) != length(aliceStates)
+        error("Wrong dimensions of alice Bits")
+    end
+    bobStates = [i for i in range(bobStart,bobEnd)]
+    if length(aliceBits) != length(bobStates)
+        error("Wrong dimensions of bob Bits")
+    end
+    return SingleGroup(aliceStates, aliceBits, bobStates, bobBits)
+end
