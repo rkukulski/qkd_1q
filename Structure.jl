@@ -9,7 +9,7 @@ mutable struct QKDProtocol
     povms::Vector{Vector{ComplexF64}}
     dim::Int64 #Just to check dimensions
     dimS::Int64 #Number of groups used in decision Matrix
-    GroupMatrix::Matrix{Int64} #zwraca numer grupy dla idA, id
+    GroupMatrix::Matrix{Int64} #for fast getting groups
     aliceBits::Vector{Bool}
     bobBits::Vector{Bool}
     successMatrix::Matrix{Bool}
@@ -40,15 +40,15 @@ mutable struct QKDProtocol
     
 end
 
-function generateGroups!(qkd::QKDProtocol)
+function generateGroups!(qkd::QKDProtocol) 
     """
     Only consider biggest Squares
     Rectangles are not considered
     """
     numberOfGroups = 0
-    Groups::Vector{SingleGroup}()
-    GroupMatrix = ones(size(qkd.successMatrix))
-    squares = copy(qkd.successMatrix)
+    Groups = Vector{SingleGroup}()
+    GroupMatrix = zeros(size(qkd.successMatrix))
+    squares = copy(Int.(qkd.successMatrix))
     for i in range(2,size(qkd.successMatrix)[1])
         for j in range(2,size(qkd.successMatrix)[2])
             if qkd.successMatrix[i,j] == true
@@ -63,6 +63,7 @@ function generateGroups!(qkd::QKDProtocol)
             if squares[i,j] < 2
                 continue
             elseif squares[i,j] > max(squares[i+1,j],squares[i,j+1],squares[i+1,j+1]) 
+                # do zmiany cale albo sprawdzanie warunkow brzegowych 
                 numberOfGroups += 1
                 len = squares[i,j]
                 """
@@ -99,20 +100,26 @@ function decisionFunctionLikeBB84!(qkd::QKDProtocol; tol=1e-8)
     return nothing
 end
 
-function customDecisionFunction!()
-    #tutaj musi wejsc gotowy juz successMatrix
-    #oraz grupy odpowiednie jakis wektor tych grup 
-    #moze wejsc od razu wektor grup ktore tworzy sie wczesniej i to wkleic 
-    #przeitereowac indeksy z grup
+function customDecisionFunction!(qkd::QKDProtocol, successMatrix::Matrix{Bool}, groups::Vector{SingleGroup} )
+    qkd.successMatrix = successMatrix
+    qkd.Groups = groups
+    GroupMatrix = zeros(size(qkd.successMatrix))
+    for (x, group) in enumerate(groups)
+        for i in group.aliceStates
+            for j in group.aliceStates
+                GroupMatrix[i,j] = x
+            end
+        end
+    end
+    qkd.GroupMatrix = GroupMatrix
 end
 
 
 function getBits(qkd::QKDProtocol, idA, idB)
-    #To zmienic 
-    #Dodac grupmatrixa ktory by przechowywal ida, idb ktora grpe mamy 
-    #potem find index in list i z tego indexu pobrac aliceBits
     if qkd.successMatrix[idA, idB]
-        return true, Int(qkd.aliceBits[idA]), Int(qkd.bobBits[idB]) #nrgrupy dodac
+        group = qkd.Groups[qkd.GroupMatrix[idA, idB]]
+        group.aliceBits[findfirst(==(idA),group.aliceStates)]
+        return true, group.aliceBits[findfirst(==(idA),group.aliceStates)], group.BobBits[findfirst(==(idB),group.BobStates)] 
     else
         return false, nothing, nothing, nothing
     end
@@ -145,12 +152,8 @@ qkd = QKDProtocol(
     ]
 )
 
-setBitsBB84!(qkd)
-decisionFunctionLikeBB84!(qkd)
-#Bity dla grupy zrobić jakiś check wszystkich grup
-#Jakaś struktura dla 
+#decisionFunctionLikeBB84!(qkd) na razie rzuca błąd
 println("Rhos: ", qkd.rhos)
 println("POVMs: ", qkd.povms)
-println("Alice bits: ", qkd.aliceBits)
-println("Bob bits: ", qkd.bobBits)
+println("Groups: ", qkd.GroupMatrix)
 println("Success matrix: ", qkd.successMatrix)

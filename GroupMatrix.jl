@@ -2,10 +2,10 @@ using LinearAlgebra
 
 mutable struct SingleGroup
     aliceStates::Vector{Int64}
-    aliceBits::Vector{Bool}
+    aliceBits::Vector{Int64}
     BobStates::Vector{Int64}
-    BobBits::Vector{Bool}
-    function SingleGroup(aliceStates::Vector{Int64}, aliceBits::Vector{Bool},BobStates::Vector{Int64},BobBits::Vector{Bool})
+    BobBits::Vector{Int64}
+    function SingleGroup(aliceStates::Vector{Int64}, aliceBits::Vector{Int64},BobStates::Vector{Int64},BobBits::Vector{Int64})
         new(aliceStates, aliceBits,BobStates,BobBits)
     end
 end
