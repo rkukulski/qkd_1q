@@ -7,7 +7,7 @@ function SixStateProtocol()
     list_rho = [[1, 0], [0, 1], [1/sqrt(2), 1/sqrt(2)], [1/sqrt(2), -1/sqrt(2)], [1/sqrt(2), im/sqrt(2)], [1/sqrt(2), -im/sqrt(2)]]
     povm = [[0, 1]/sqrt(3), [1, 0]/sqrt(3), [1, -1]/sqrt(6), [1, 1]/sqrt(6), [1, -im]/sqrt(6), [1, im]/sqrt(6)]
     f = [[1/3, 1/3, 1/3], [[1,2], [3,4], [5,6]]]
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 function MSZProtocol()
     #Nie są stany podane, tylko, że nieortogonalne
@@ -19,7 +19,7 @@ function MSZProtocol()
     list_rho = [[1, 0], [-1, 0], [0, 1], [0, -1]]
     povm = [[-1, 0]/sqrt(2), [1, 0]/sqrt(2), [0, -1]/sqrt(2), [0, 1]/sqrt(2)]
     f = [[1/2, 1/2],[[1,2], [3,4]]]
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 #S13 ciekawe ale się nie da zaimplementować
 function KMB09_N4()
@@ -39,8 +39,7 @@ function KMB09_N4()
         [1/2, -1/2, -1/2, 1/2],   
         [1/2, 1/2, 1/2, 1/2]       
     ]
-    f = [[1.0],[[1,2,3,4]]] 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 
 #W pewnym artykule taki asymetryczny sposob pomiaru jest tez stosowany niby w Twin Field
@@ -72,7 +71,7 @@ function T12(px::Float64 = 1/16)
     ]
     f = [[pz, px], [[1,2], [3,4]]]
 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 function Chau15()
     #Inny kompletnie sposob kodowania dla n wymiarów, tutaj pewne uproszczenie dla 4 wymiarów
@@ -96,7 +95,7 @@ function Chau15()
 
     f = [ones(6)/6,[[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]]
 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 
 
@@ -136,7 +135,7 @@ function K_State_P1(K_val::Int, a_val::Float64)
 
     f = [fill(1.0/K_val, K_val), states_pairs]
 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 function K_State_P2(K_val::Int, a_val::Float64)
     name = "K_State_P1$(K_val)_a$(round(a_val, digits=3))"
@@ -165,7 +164,7 @@ function K_State_P2(K_val::Int, a_val::Float64)
     
        f = [[1.0], [collect(1:K_val)]]
 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 function ThreeStateQKD()
     #http://dx.doi.org/10.1080/09500340008244056
@@ -189,7 +188,7 @@ function ThreeStateQKD()
     f = [[1.0],   
          [[0,1,2]]] 
 
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 
 #https://link.springer.com/article/10.1007/s11128-020-02927-8
@@ -258,7 +257,7 @@ function Qutrit()
     ]
 
     f = [[1/2, 1/2], [[1,2,3], [4,5,6]]]
-    return [qa, [x*x' for x in list_rho], [x*x' for x in povm], f], name
+    return [qa, list_rho, povm, f], name
 end
 
 #https://arxiv.org/pdf/2005.05463
@@ -320,5 +319,5 @@ function Loss_Tolerant_QKD(p_ZA::Float64 = 0.7)
     
     f = [f_distribution, [f_points_Z_basis, f_points_X_basis]]
     
-    return [qa, [x*x' for x in list_rho], povm, f], name
+    return [qa, list_rho, povm, f], name
 end

@@ -58,7 +58,6 @@ function y1_sdp(ϵ, qa, list_rho, povm, f)
     return problem.optval
 end
 
-
 function y2_sdp(ϵ, qa, list_rho, povm, f)
     dim = size(list_rho[1],1)
     d2 = dim^2
@@ -75,12 +74,12 @@ function y2_sdp(ϵ, qa, list_rho, povm, f)
 
     # Dual Diamond norm constraint
     Y = Semidefinite(d2)
-    LMI = [ Y     J_Phi - J_Id;
-            (J_Phi - J_Id)'        Y ]
+    LMI = [ Y     -J_Phi + J_Id;
+            (-J_Phi +J_Id)'        Y ]
     push!(constraints, LMI in :SDP)
     push!(constraints, tr(Y) <= 2*ϵ)
 
-
+    I_d = Matrix(I, dim, dim)
     total = 0.0
     S = length(f[1])
     for s in 1:S
@@ -90,8 +89,9 @@ function y2_sdp(ϵ, qa, list_rho, povm, f)
             a_prob = qa[a_idx]
             rho_a = list_rho[a_idx]
             M_b = povm[b_idx]
-            op = kron(M_b, transpose(rho_a))
-            total += s_prob * a_prob * real(tr(J_Phi * op))
+            A = J_Phi * kron(I_d, transpose(rho_a)) 
+            Phi_rho =partialtrace(A, 1, [dim, dim])
+            total += s_prob * a_prob * real(tr(M_b * Phi_rho))
             # push!(constraints, real(tr(J_Phi * op)) >= 0)
         end
     end

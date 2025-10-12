@@ -37,49 +37,66 @@ mutable struct QKDProtocol
     new(name, qa, list_rho_c, povm_c, dim, 0,Array{Int64}(undef, 0, 0), Vector{Bool}(), Vector{Bool}(), Array{Bool}(undef, 0, 0), Vector{SingleGroup}())
     end
 
-    
+    function QKDProtocol(
+    name::String,
+    qa::Vector{Float64},
+    rhos::Vector{Vector{ComplexF64}},
+    povms::Vector{Vector{ComplexF64}},
+    dim::Int,
+    dimS::Int,
+    GroupMatrix::Matrix{Int},
+    aliceBits::Vector{Bool},
+    bobBits::Vector{Bool},
+    successMatrix::Matrix{Bool},
+    Groups::Vector{SingleGroup}
+)
+    new(name, qa, rhos, povms, dim, dimS, GroupMatrix, aliceBits, bobBits, successMatrix, Groups)
 end
 
-function generateGroups!(qkd::QKDProtocol) 
-    """
-    Only consider biggest Squares
-    Rectangles are not considered
-    """
-    numberOfGroups = 0
+end
+
+
+function generateGroups!(qkd::QKDProtocol; min_size=2)
+    Matrix = qkd.successMatrix
+    rows, cols = size(Matrix)
+    GroupMatrix = zeros(Int, rows, cols)
     Groups = Vector{SingleGroup}()
-    GroupMatrix = zeros(size(qkd.successMatrix))
-    squares = copy(Int.(qkd.successMatrix))
-    for i in range(2,size(qkd.successMatrix)[1])
-        for j in range(2,size(qkd.successMatrix)[2])
-            if qkd.successMatrix[i,j] == true
-                squares[i,j] = 1 + min(squares[i-1,j],squares[i,j-1],squares[i-1,j-1])
-            else
-                squares[i,j] = 0
-            end
-        end
-    end
-    for i in range(1,size(qkd.successMatrix)[1])
-        for j in range(1,size(qkd.successMatrix)[2])
-            if squares[i,j] < 2
-                continue
-            elseif squares[i,j] > max(squares[i+1,j],squares[i,j+1],squares[i+1,j+1]) 
-                # do zmiany cale albo sprawdzanie warunkow brzegowych 
-                numberOfGroups += 1
-                len = squares[i,j]
-                """
-                111
-                111
-                110 in this case algorithm will create 2 square groups: indexes [1,2][1,3][2,2][2,3]; [2,1][2,2][3,1][3,2]
-                """
-                push!(Groups,createGroupBB84(i-len+1,i,j-len+1,j))
-                for x in range(i-len+1,i)
-                    for y in range(j-len+1,j)
-                        GroupMatrix[x,y] = numberOfGroups
+    numberOfGroups = 0
+
+    visited = falses(rows, cols)
+
+    for i in 1:rows
+        for j in 1:cols
+            if Matrix[i, j] && !visited[i, j]
+                xmax = i
+                while xmax <= rows && Matrix[xmax, j]
+                    xmax += 1
+                end
+                xmax -= 1
+
+                ymax = j
+                while ymax <= cols && all(Matrix[i:xmax, ymax])
+                    ymax += 1
+                end
+                ymax -= 1
+
+                if xmax - i + 1 >= 2 && ymax - j + 1 >= 2 && all(Matrix[i:xmax, j:ymax])
+                    numberOfGroups += 1
+                    for x in i:xmax, y in j:ymax
+                        visited[x, y] = true
+                        GroupMatrix[x, y] = numberOfGroups
+                    end
+                    push!(Groups, createGroupBB84(i, xmax, j, ymax))
+                else
+                    for x in i:xmax, y in j:ymax
+                        visited[x, y] = true
                     end
                 end
             end
         end
     end
+
+
     qkd.dimS = numberOfGroups
     qkd.GroupMatrix = GroupMatrix
 end
@@ -152,7 +169,7 @@ qkd = QKDProtocol(
     ]
 )
 
-#decisionFunctionLikeBB84!(qkd) na razie rzuca błąd
+decisionFunctionLikeBB84!(qkd) 
 println("Rhos: ", qkd.rhos)
 println("POVMs: ", qkd.povms)
 println("Groups: ", qkd.GroupMatrix)
