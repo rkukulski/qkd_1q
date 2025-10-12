@@ -136,7 +136,7 @@ function getBits(qkd::QKDProtocol, idA, idB)
     if qkd.successMatrix[idA, idB]
         group = qkd.Groups[qkd.GroupMatrix[idA, idB]]
         group.aliceBits[findfirst(==(idA),group.aliceStates)]
-        return true, group.aliceBits[findfirst(==(idA),group.aliceStates)], group.BobBits[findfirst(==(idB),group.BobStates)] 
+        return true, group.aliceBits[findfirst(==(idA),group.aliceStates)], group.BobBits[findfirst(==(idB),group.BobStates)], qkd.GroupMatrix[idA, idB]  
     else
         return false, nothing, nothing, nothing
     end
