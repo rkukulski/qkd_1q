@@ -18,8 +18,6 @@ function save_protocol(protocol::QKDProtocol, filename::String)
         "dim" => protocol.dim,
         "dimS" => protocol.dimS,
         "GroupMatrix" => protocol.GroupMatrix,
-        "aliceBits" => protocol.aliceBits,
-        "bobBits" => protocol.bobBits,
         "successMatrix" => protocol.successMatrix,
         "Groups" => [ Dict(
             "aliceStates" => g.aliceStates,
@@ -46,8 +44,6 @@ function load_protocol(filename::String)
         data["dim"],
         data["dimS"],
         data["GroupMatrix"],
-        data["aliceBits"],
-        data["bobBits"],
         data["successMatrix"],
         groups
     )
@@ -80,16 +76,6 @@ function create_protocol_from_terminal()
     end
 
     prot = QKDProtocol(name, qa, rhos, povms)
-
-
-    println("Create bits by hand? (y/n)")
-    resp = readline()
-    if lowercase(resp) == "y"
-        println("aliceBits (0/1 separator , ):")
-        prot.aliceBits = parse.(Bool, split(readline(), ","))
-        println("bobBits (0/1 separator , ):")
-        prot.bobBits = parse.(Bool, split(readline(), ","))
-    end
 
     println("Create groups by hand?  (y/n)")
     resp = readline()

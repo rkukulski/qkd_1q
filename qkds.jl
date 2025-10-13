@@ -287,7 +287,7 @@ makes a collective orthogonal measurement under the basis of Eqs. (1) to determi
 system has been prepared"""
     f = [[1.0], [[1, 2, 3, 4, 5, 6, 7, 8, 9]]]
 
-    return [qa, [x*x' for x in list_rho], povm, f], name
+    return [qa, list_rho, povm, f], name
 end
 
 function Loss_Tolerant_QKD(p_ZA::Float64 = 0.7)

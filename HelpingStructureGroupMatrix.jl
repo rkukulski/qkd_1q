@@ -22,12 +22,16 @@ end
 
 function createGroupCustom(aliceStart::Int64, aliceEnd::Int64, bobStart::Int64, bobEnd::Int64, aliceBits::Vector{Bool}, bobBits::Vector{Bool})
     aliceStates = [i for i in range(aliceStart,aliceEnd)]
+    # println("Alice states: ", aliceStates)
+    # println("Alice bits: ", aliceBits)
     if length(aliceBits) != length(aliceStates)
         error("Wrong dimensions of alice Bits")
     end
     bobStates = [i for i in range(bobStart,bobEnd)]
-    if length(aliceBits) != length(bobStates)
+    # println("Bob states: ", bobStates)
+    # println("Bob bits: ", bobBits)
+    if length(bobBits) != length(bobStates)
         error("Wrong dimensions of bob Bits")
     end
-    return SingleGroup(aliceStates, aliceBits, bobStates, bobBits)
+    return SingleGroup(aliceStates, [Int(x) for x in aliceBits], bobStates, [Int(x) for x in bobBits])
 end

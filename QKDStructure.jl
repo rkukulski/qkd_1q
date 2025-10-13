@@ -1,19 +1,17 @@
 using JSON
 using LinearAlgebra
-include("GroupMatrix.jl")
+include("HelpingStructureGroupMatrix.jl")
 
 mutable struct QKDProtocol 
     name::String
-    qa::Vector{Float64}
-    rhos::Vector{Vector{ComplexF64}}
-    povms::Vector{Vector{ComplexF64}}
+    qa::Vector{Float64} #Distribution of probabilities for states
+    rhos::Vector{Vector{ComplexF64}} #States
+    povms::Vector{Vector{ComplexF64}} #POVM used to measure states at index i
     dim::Int64 #Just to check dimensions
     dimS::Int64 #Number of groups used in decision Matrix
     GroupMatrix::Matrix{Int64} #for fast getting groups
-    aliceBits::Vector{Bool}
-    bobBits::Vector{Bool}
-    successMatrix::Matrix{Bool}
-    Groups::Vector{SingleGroup}
+    successMatrix::Matrix{Bool} #Matrix that tells if a bases from Alice and Bob are compatible
+    Groups::Vector{SingleGroup} #List of groups/different bases used in decision Matrix
 
 
     function QKDProtocol(name::String, qa::Vector{Float64}, list_rho::Vector{Vector{T1}},
@@ -34,7 +32,7 @@ mutable struct QKDProtocol
         if !isapprox(total, I, atol=1e-8)
             error("POVM does not sum to identity")
         end
-    new(name, qa, list_rho_c, povm_c, dim, 0,Array{Int64}(undef, 0, 0), Vector{Bool}(), Vector{Bool}(), Array{Bool}(undef, 0, 0), Vector{SingleGroup}())
+    new(name, qa, list_rho_c, povm_c, dim, 0,Array{Int64}(undef, 0, 0), Array{Bool}(undef, 0, 0), Vector{SingleGroup}())
     end
 
     function QKDProtocol(
@@ -45,12 +43,10 @@ mutable struct QKDProtocol
     dim::Int,
     dimS::Int,
     GroupMatrix::Matrix{Int},
-    aliceBits::Vector{Bool},
-    bobBits::Vector{Bool},
     successMatrix::Matrix{Bool},
     Groups::Vector{SingleGroup}
 )
-    new(name, qa, rhos, povms, dim, dimS, GroupMatrix, aliceBits, bobBits, successMatrix, Groups)
+    new(name, qa, rhos, povms, dim, dimS, GroupMatrix,  successMatrix, Groups)
 end
 
 end
@@ -123,7 +119,7 @@ function customDecisionFunction!(qkd::QKDProtocol, successMatrix::Matrix{Bool}, 
     GroupMatrix = zeros(size(qkd.successMatrix))
     for (x, group) in enumerate(groups)
         for i in group.aliceStates
-            for j in group.aliceStates
+            for j in group.BobStates
                 GroupMatrix[i,j] = x
             end
         end
@@ -151,26 +147,3 @@ end
 
 
 
-
-qkd = QKDProtocol(
-    "BB84",
-    [1/4, 1/4, 1/4, 1/4],
-    [
-        [1+0im, 0+0im],
-        [0+0im, 1+0im],
-        [1+0im, 1+0im]/sqrt(2),
-        [1+0im, -1+0im]/sqrt(2)
-    ],
-    [
-        [1+0im, 0+0im]/sqrt(2),
-        [0+0im, 1+0im]/sqrt(2),
-        [1+0im, 1+0im]/2,
-        [1+0im, -1+0im]/2,
-    ]
-)
-
-decisionFunctionLikeBB84!(qkd) 
-println("Rhos: ", qkd.rhos)
-println("POVMs: ", qkd.povms)
-println("Groups: ", qkd.GroupMatrix)
-println("Success matrix: ", qkd.successMatrix)
