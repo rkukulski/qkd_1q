@@ -92,7 +92,7 @@ function generateGroups!(qkd::QKDProtocol; min_size=2)
         end
     end
 
-
+    qkd.Groups = Groups
     qkd.dimS = numberOfGroups
     qkd.GroupMatrix = GroupMatrix
 end

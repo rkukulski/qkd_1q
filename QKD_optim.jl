@@ -48,7 +48,7 @@ function ye(qkd::QKDProtocol)
 
         # Eve (BI_in ⊗ BI_out), (e ⊗ c), Eve[e][c]
         Eve = [[ComplexVariable(4,4) for _=1:S] for _=1:2]
-        constraints = [Eve[e][c] in :SDP for e=1:2, c=1:S]
+        constraints = vec([Eve[e][c] in :SDP for e=1:2, c=1:S])
         for c=1:(S-1)
             constraints += [sum(Eve[e][c] for e=1:2) == sum(Eve[e][c+1] for e=1:2)]
         end
@@ -75,14 +75,14 @@ function ye(qkd::QKDProtocol)
         )
         PEA = real(
             sum(
-                qkd.qa[a] * cond_prob(getBits(qkd, a, b)[2],b,a)  
+                qkd.qa[a] * cond_prob(getBits(qkd, a, b)[2]+1,b,a)  
                 for a in eachindex(qkd.qa), b in eachindex(qkd.povms)
                 if getBits(qkd, a, b)[1] 
             )
         )
         PEB = real(
             sum(
-                qkd.qa[a] * cond_prob(getBits(qkd, a, b)[3],b,a)  
+                qkd.qa[a] * cond_prob(getBits(qkd, a, b)[3]+1,b,a)  
                 for a in eachindex(qkd.qa), b in eachindex(qkd.povms)
                 if getBits(qkd, a, b)[1] 
             )
@@ -104,7 +104,7 @@ function ye(qkd::QKDProtocol)
             silent_solver = true
         )
 
-        print("$(problem.status): $(problemA.optval) \n")
+        print("$(problemA.status): $(problemA.optval) \n")
         push!(results, problemA.optval)
 
         # B
@@ -116,7 +116,7 @@ function ye(qkd::QKDProtocol)
             silent_solver = true
         )
 
-        print("$(problem.status): $(problemB.optval) \n")
+        print("$(problemB.status): $(problemB.optval) \n")
         push!(results, problemB.optval)
 
         return minimum(results)

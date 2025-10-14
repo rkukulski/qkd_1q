@@ -1,6 +1,7 @@
 include("QKDList.jl")
 include("QKDStructure.jl")
 include("HelpingStructureGroupMatrix.jl")
+include("QKD_optim.jl")
 
 """
 QKDs implemented before can be imported from file QKDList.jl
@@ -106,4 +107,4 @@ Now we can run SDP to get key rate for our protocol:
 """
 
 println("--- SDP ---")
-println("Key rate: ", SDP(qkd, 0.99))
+println("Key rate: ", epsilon_max(BB84))
