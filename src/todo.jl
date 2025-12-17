@@ -34,10 +34,20 @@ function draw_eps_R_max(filename; delta = 0.005)
     unique_ids = unique(indices)
 
     for id in unique_ids
-    masked_results = [indices[j] == id ? results[j] : NaN for j in eachindex(results)]
-    plot!(Pl, interval, masked_results, 
-          color = palette(:tab10)[mod(id-1,10)+1], 
-          label="$(qkds_list[id].name)")
+        is_best = (indices .== id)
+        expanded_mask = copy(is_best)
+        for j in 2:length(is_best)
+            if is_best[j] || is_best[j-1]
+                expanded_mask[j] = true
+                expanded_mask[j-1] = true
+            end
+        end
+
+        masked_results = [expanded_mask[j] ? results[j] : NaN for j in eachindex(results)]
+    
+        plot!(Pl, interval, masked_results, 
+            color = palette(:tab10)[mod1(id, 10)], 
+            label = "$(qkds_list[id].name)")
     end
 
     xlims!(Pl, 0, 1)
