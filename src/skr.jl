@@ -18,7 +18,6 @@ function P_eps(qkd::QKDProtocol, eps::Real)
         silent = true
     )
 
-    # print("$(problem.status): $(problem.optval) \n")
     return problem.optval
 end
 
@@ -44,8 +43,7 @@ function PAB_eps(qkd::QKDProtocol, eps::Real)
         silent = true
     )
 
-    # print("$(problem.status): $(problem.optval) \n")
-    return problem.optval  
+    return max(problem.optval, 0.5)  
 end
 
 function min_PE_x(qkd::QKDProtocol, x::Real)
