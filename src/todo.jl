@@ -7,6 +7,8 @@ include("struct.jl")
 include("skr.jl")
 include("draw.jl")
 
+#draw_eps_R([BB84, B92, six_state, high_rate, high_qber, test], "preliminary_results_for_qkds")
+
 function optim_R_eps(eps::Real)
     """
         TODO Łukasz & Norbert:
@@ -15,5 +17,3 @@ function optim_R_eps(eps::Real)
     """
     ..
 end
-
-draw_eps_R([BB84, B92, six_state], "preliminary_results_for_known_qkds")
