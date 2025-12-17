@@ -123,79 +123,65 @@ six_state = QKDProtocol(
     ]
 )
 
+high_rate = QKDProtocol(
+    "high_rate",
+    [
+        1 1;
+    ],
+    [
+        1 1;
+        0 4;;;
+    ],
+    [
+        1
+    ]
+)
+
+high_qber = QKDProtocol(
+    "high_QBER",
+    [
+        4 1;
+        4 1;
+        4 1;
+        4 1
+    ],
+    [
+        1 0;
+        0 1;;;
+        1 sqrt(2);
+        sqrt(2) -1;;;
+        1 sqrt(2)*exp(-2/3*pi*im);
+        sqrt(2)*exp(2/3*pi*im) -1;;;
+        1 sqrt(2)*exp(-4/3*pi*im);
+        sqrt(2)*exp(4/3*pi*im) -1;;;
+    ],
+    [
+        1,
+        1,
+        1,
+        1
+    ]
+)
+
+test = QKDProtocol(
+    "new_example",
+    [
+        3 3;
+        1 1
+    ],
+    [
+        1 0;
+        0 1;;;
+        1 1;
+        1 -1
+    ],
+    [
+        3,
+        1
+    ]
+)
+
 ### todo moree
-
-# high_rate = QKDProtocol(
-#     "high_rate",
-#     [
-#         [
-#             [1,0]*[1,0]',
-#             [1,4]*[1,4]'/17
-#         ]
-#     ],
-#     [
-#         [
-#             [4,-1]*[4,-1]'/17,
-#             [0,1]*[0,1]'
-#         ]
-#     ]
-# )
-
-# high_qber = QKDProtocol(
-#     "high_QBER",
-#     [
-#         [
-#             4*[1,0]*[1,0]',
-#             [0,1]*[0,1]'
-#         ],
-#         [
-#             4*[1,sqrt(2)]*[1,sqrt(2)]'/3,
-#             [sqrt(2),-1]*[sqrt(2),-1]'/3
-#         ],
-#         [
-#             4*[1,sqrt(2)*exp(2/3*pi*im)]*[1,sqrt(2)*exp(2/3*pi*im)]'/3,
-#             [sqrt(2)*exp(-2/3*pi*im),-1]*[sqrt(2)*exp(-2/3*pi*im),-1]'/3
-#         ],
-#         [
-#             4*[1,sqrt(2)*exp(4/3*pi*im)]*[1,sqrt(2)*exp(4/3*pi*im)]'/3,
-#             [sqrt(2)*exp(-4/3*pi*im),-1]*[sqrt(2)*exp(-4/3*pi*im),-1]'/3
-#         ]
-#     ],
-#     [
-#         [
-#             [1,0]*[1,0]',
-#             4*[0,1]*[0,1]'
-#         ],
-#         [
-#             [1,sqrt(2)]*[1,sqrt(2)]'/3,
-#             4*[sqrt(2),-1]*[sqrt(2),-1]'/3
-#         ],
-#         [
-#             [1,sqrt(2)*exp(2/3*pi*im)]*[1,sqrt(2)*exp(2/3*pi*im)]'/3,
-#             4*[sqrt(2)*exp(-2/3*pi*im),-1]*[sqrt(2)*exp(-2/3*pi*im),-1]'/3
-#         ],
-#         [
-#             [1,sqrt(2)*exp(4/3*pi*im)]*[1,sqrt(2)*exp(4/3*pi*im)]'/3,
-#             4*[sqrt(2)*exp(-4/3*pi*im),-1]*[sqrt(2)*exp(-4/3*pi*im),-1]'/3
-#         ]
-#     ]
-# )
-
-# test = QKDProtocol(
-#     "test",
-#     [
-#         [
-#             [1,0]*[1,0]',
-#             [4,1]*[4,1]'/17
-#         ]
-#     ],
-#     [
-#         [
-#             [1,-4]*[1,-4]'/17,
-#             [0,1]*[0,1]'
-#         ]
-#     ]
-# )
 
 # KL3P2W = QKDProtocol(
 #     "KL3P2W",
