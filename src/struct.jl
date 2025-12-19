@@ -46,7 +46,7 @@ mutable struct QKDProtocol
             Bi = [I(2)-Ai[2], I(2)-Ai[1]]
 
             Ai = [u_p_array[i, ab]*Ai[ab]/p_sum for ab=1:2]
-            Bi = [u_q_array[i]*p_sum*Bi[ab]/u_p_array[i, ab] for ab=1:2]
+            Bi = [u_q_array[i]*u_p_array[i, 3-ab]*Bi[ab]/sum(u_p_array[i, :]) for ab=1:2]
             Q += sum(Bi)
 
             push!(A, Ai)
@@ -223,10 +223,7 @@ test = QKDProtocol(
 #     ]
 # )
 
-# function randU()
-#     G = randn(2,2) + im*randn(2,2)
-#     return G*(G'*G)^(-1/2)
-# end
+
 
 # function randZ()
 #     return [
