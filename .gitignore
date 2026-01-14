@@ -1,0 +1,31 @@
+# Julia
+*.jl.cov
+*.jl.*.cov
+*.ji
+*.mem
+deps/deps.jl
+deps/build.log
+docs/build/
+docs/site/
+Manifest.toml
+.project
+.vscode
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.toc
+*.xdv
+*-blx.bib
+*.run.xml
+
+# System
+.DS_Store
+Thumbs.db
