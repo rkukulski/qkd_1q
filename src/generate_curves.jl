@@ -16,7 +16,7 @@ include("Heuristic/basic.jl")
 function generate_curves()
     # Parameters
     N_values = [1, 2, 3, 4]
-    epsilon_values = 0.0:0.00025:0.01
+    epsilon_values = 0.000025:0.000025:0.01
     
     swarm_size = 20
     max_iter = 50 

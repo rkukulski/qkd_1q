@@ -23,7 +23,7 @@ function P_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
 
     problem = minimize(f, constraints)
     
-    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problem,
             MOI.OptimizerWithAttributes(
@@ -34,6 +34,9 @@ function P_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
                 "verbose" => false
             )
         )
+    end
+    if problem.status != MOI.OPTIMAL && problem.status != MOI.ALMOST_OPTIMAL
+        @warn "P_eps problem not solved optimally: $(problem.status)"
     end
 
     return problem.optval
@@ -55,7 +58,7 @@ function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
 
     problem = minimize(f, constraints)
     
-    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problem,
             MOI.OptimizerWithAttributes(
@@ -66,6 +69,9 @@ function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
                 "verbose" => false
             )
         )
+    end
+    if problem.status != MOI.OPTIMAL && problem.status != MOI.ALMOST_OPTIMAL
+        @warn "PAB_eps problem not solved optimally: $(problem.status)"
     end
 
     return max(problem.optval, 0.5)  
@@ -98,7 +104,7 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
     # A
     fA = real(sum(tr(Eve[i][e]*MEA[i][e]) for i=1:qkd.N, e=1:2))
     problemA = maximize(fA, constraints)
-    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problemA,
             MOI.OptimizerWithAttributes(
@@ -110,12 +116,15 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
             )
         )
     end
+    if problemA.status != MOI.OPTIMAL && problemA.status != MOI.ALMOST_OPTIMAL
+        @warn "min_PE_x (A) problem not solved optimally: $(problemA.status)"
+    end
     push!(results, problemA.optval)
 
     # B
     fB = real(sum(tr(Eve[i][e]*MEB[i][e]) for i=1:qkd.N, e=1:2))
     problemB = maximize(fB, constraints)
-    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problemB,
             MOI.OptimizerWithAttributes(
@@ -126,6 +135,9 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
                 "verbose" => false
             )
         )
+    end
+    if problemB.status != MOI.OPTIMAL && problemB.status != MOI.ALMOST_OPTIMAL
+        @warn "min_PE_x (B) problem not solved optimally: $(problemB.status)"
     end
     push!(results, problemB.optval)
 
