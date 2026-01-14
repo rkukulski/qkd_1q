@@ -1,8 +1,12 @@
+using LinearAlgebra
 mutable struct QKDProtocol 
     name::String
     A::Vector{Vector{Matrix{ComplexF64}}}
     B::Vector{Vector{Matrix{ComplexF64}}}
     N::Int64
+    p_array::Array{Float64, 2}
+    psi_array::Array{ComplexF64, 3}
+    q_array::Array{Float64, 1}
 
     function QKDProtocol(
         name::String,  
@@ -62,7 +66,10 @@ mutable struct QKDProtocol
             name, 
             A,
             B,
-            N
+            N,
+            convert(Array{Float64, 2}, u_p_array),
+            convert(Array{ComplexF64, 3}, u_psi_array),
+            convert(Array{Float64, 1}, u_q_array)
         )
     end
 end

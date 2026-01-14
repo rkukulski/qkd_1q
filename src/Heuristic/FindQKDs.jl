@@ -1,5 +1,6 @@
 using Convex
 using SCS
+include("../struct.jl")
 include("../skr.jl")
 include("bee.jl")
 include("../helpfulFunctions.jl")
