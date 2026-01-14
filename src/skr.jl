@@ -1,12 +1,15 @@
 using LinearAlgebra
 using Convex
 using SCS
+using Clarabel
+using Logging
+
 
 const ⊗ = kron
 const MOI = Convex.MOI
 
 
-function P_eps(qkd::QKDProtocol, eps::Real)
+function P_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
     ent = ComplexF64.(vec(I(2)))
     QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
 
@@ -20,16 +23,23 @@ function P_eps(qkd::QKDProtocol, eps::Real)
 
     problem = minimize(f, constraints)
     
-    solve!(
-        problem,
-        MOI.OptimizerWithAttributes(SCS.Optimizer, "eps_abs" => 1e-8, "eps_rel" => 1e-8);
-        silent = true
-    )
+    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+        solve!(
+            problem,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer, 
+                "tol_gap_abs" => tol, 
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
 
     return problem.optval
 end
 
-function PAB_eps(qkd::QKDProtocol, eps::Real)
+function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
     ent = ComplexF64.(vec(I(2)))
     QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
     WS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][a] for i=1:qkd.N, a=1:2)
@@ -45,16 +55,23 @@ function PAB_eps(qkd::QKDProtocol, eps::Real)
 
     problem = minimize(f, constraints)
     
-    solve!(
-        problem,
-        MOI.OptimizerWithAttributes(SCS.Optimizer, "eps_abs" => 1e-8, "eps_rel" => 1e-8);
-        silent = true
-    )
+    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+        solve!(
+            problem,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer, 
+                "tol_gap_abs" => tol, 
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
 
     return max(problem.optval, 0.5)  
 end
 
-function min_PE_x(qkd::QKDProtocol, x::Real)
+function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
     # Eve[i][e] = (BI_in ⊗ BI_out) 
 
     MS = [[sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for a=1:2, b=1:2) for e=1:2] for i=1:qkd.N]
@@ -81,33 +98,47 @@ function min_PE_x(qkd::QKDProtocol, x::Real)
     # A
     fA = real(sum(tr(Eve[i][e]*MEA[i][e]) for i=1:qkd.N, e=1:2))
     problemA = maximize(fA, constraints)
-    solve!(
-        problemA,
-        MOI.OptimizerWithAttributes(SCS.Optimizer, "eps_abs" => 1e-8, "eps_rel" => 1e-8);
-        silent = true
-    )
+    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+        solve!(
+            problemA,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer, 
+                "tol_gap_abs" => tol, 
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
     push!(results, problemA.optval)
 
     # B
     fB = real(sum(tr(Eve[i][e]*MEB[i][e]) for i=1:qkd.N, e=1:2))
     problemB = maximize(fB, constraints)
-    solve!(
-        problemB,
-        MOI.OptimizerWithAttributes(SCS.Optimizer, "eps_abs" => 1e-8, "eps_rel" => 1e-8);
-        silent = true
-    )
+    with_logger(ConsoleLogger(stderr, Logging.Warn)) do
+        solve!(
+            problemB,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer, 
+                "tol_gap_abs" => tol, 
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
     push!(results, problemB.optval)
 
     return minimum(results)
 end
 
-function R_eps(qkd::QKDProtocol, eps::Real)
+function R_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
     function h2(a)
         if a<=1e-9 || a>=1-1e-9
             return 0
         end
         return -a*log2(a) - (1-a)*log2(1-a)
     end
-    temp = PAB_eps(qkd, eps)
-    return P_eps(qkd, eps) * max((h2(min_PE_x(qkd, temp)) - h2(temp)), 0)
+    temp = PAB_eps(qkd, eps; tol=tol)
+    return P_eps(qkd, eps; tol=tol) * max((h2(min_PE_x(qkd, temp; tol=tol)) - h2(temp)), 0)
 end
