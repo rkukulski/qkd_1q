@@ -36,37 +36,27 @@ end
 function perturb_protocol(qkd::QKDProtocol; perturb_val=0.1)
     N = qkd.N
     
-    psi_rec = zeros(ComplexF64, 2, 2, N)
-    p_rec = zeros(N, 2)
-    q_rec = zeros(N)
-
-    for i in 1:N
-        q_rec[i] = real(tr(sum(qkd.B[i])))
-        
-        for a in 1:2
-            A_mat = qkd.A[i][a]
-            p_rec[i, a] = real(tr(A_mat))
-            col = sum(abs2, A_mat, dims=1)
-            idx = argmax(col)[2]
-            psi_rec[:, a, i] = A_mat[:, idx] / sqrt(col[idx])
-        end
-    end
-
+    p_rec = deepcopy(qkd.p_array)
+    psi_rec = deepcopy(qkd.psi_array)
+    q_rec = deepcopy(qkd.q_array)
+    
     for i in 1:N, a in 1:2
         noise = randn(ComplexF64, 2) * perturb_val
         v = psi_rec[:, a, i] + noise
         psi_rec[:, a, i] = v / norm(v)
     end
 
- 
     p_rec .+= (randn(size(p_rec)) .* perturb_val * 0.5)
+    
     q_rec .+= (randn(N) .* perturb_val * 0.5)
     
-
     p_rec = clamp.(p_rec, 0.001, 1.0)
     q_rec = clamp.(q_rec, 0.001, 1.0)
 
-     for i in 1:N p_rec[i,:] /= sum(p_rec[i,:]) end
+    for i in 1:N 
+        p_slice = p_rec[i,:]
+        p_rec[i,:] = p_slice / sum(p_slice)
+    end
 
     return QKDProtocol(qkd.name * "_mut", p_rec, psi_rec, q_rec)
 end

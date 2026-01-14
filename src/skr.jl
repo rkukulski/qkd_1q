@@ -1,3 +1,11 @@
+using LinearAlgebra
+using Convex
+using SCS
+
+const ⊗ = kron
+const MOI = Convex.MOI
+
+
 function P_eps(qkd::QKDProtocol, eps::Real)
     ent = ComplexF64.(vec(I(2)))
     QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
