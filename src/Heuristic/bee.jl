@@ -28,7 +28,7 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
     #---------------------------------#
 
     for iter in 1:max_iter
-        println("Iteration $iter, Best R_eps = $best_R")
+        println("N=$(qkd_template.N), eps=$(eps), Iteration $iter, Best R_eps = $best_R")
 
         """Generate bees"""
         Threads.@threads for i in 1:swarm_size
