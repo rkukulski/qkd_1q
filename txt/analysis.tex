@@ -242,7 +242,8 @@ are linearly independent, for all $i$,
 \item $(q_i)_i$ for $i=1,\ldots,N$. The vector satisfy $q_i > 0$ for all $i$ 
 and \begin{equation}
 \sum_{i,a} 
-\frac{q_i}{p_{i,a}} \proj{\psi_{i,a \oplus 1}^\perp} \le \Id_2.\end{equation}
+q_i \frac{ p_{i,a \oplus 1}}{p_{i,0}+p_{i,1}} \proj{\psi_{i,a \oplus 1}^\perp} 
+\le \Id_2.\end{equation}
 \end{itemize}
 \subsection{Input:}
 $\epsilon \in [0,1]$
@@ -258,7 +259,7 @@ for which $\frac14 \bra{\Id} J_\Phi \ket{\Id} \ge 1-\epsilon$. Then, the
 probability that Alice sends $\ket{\psi_{i,a}}$ and Bob measures 
 $\ket{\phi_{j,b}}$ equals 
 $p_{i,a} \tr\left(J_\Phi (\overline{\proj{\psi_{i,a}}} \otimes 
-\proj{\psi_{j,b}})\right)$. 
+\proj{\phi_{j,b}})\right)$. 
 That gives
 \begin{equation}
 \PP(S) = \sum_{i,a,b} p_{i,a} \tr\left(J_\Phi (\overline{\proj{\psi_{i,a}}} 
@@ -317,11 +318,12 @@ means $a=b$.
 In other words, $\ket{\phi_{i,b}} \propto \ket{\psi_{i,b\oplus 1}^\perp}$. 
 Moreover, for each $i$ 
 there can not be any bias between $0$ and $1$. That indicate $\ket{\phi_{i,b}} 
-= \sqrt{\frac{q_i}{p_{i,b}}}\ket{\psi_{i,b\oplus 1}^\perp}$ for some $q_i > 0$.
+= \sqrt{\frac{ p_{i,b \oplus 1}}{p_{i,0}+p_{i,1}}q_i}\ket{\psi_{i,b\oplus 
+1}^\perp}$ for some $q_i > 0$.
 \subsection{$\PP_\epsilon(S)$:}
-Let $Q_S = \sum_{i,a,b} \frac{q_i 
-p_{i,a}}{p_{i,b}}(\overline{\proj{\psi_{i,a}}} 
-\otimes \proj{\psi_{i,b\oplus 1}^\perp})$.
+Let $Q_S = \sum_{i,a,b}  
+p_{i,a} \overline{\proj{\psi_{i,a}}} 
+\otimes \proj{\phi_{i,b}}$.
 \begin{equation}
 \begin{split}
 \PP_\epsilon(S) &= \min_{\Phi \sim \epsilon} \PP(S)\\
@@ -332,8 +334,9 @@ p_{i,a}}{p_{i,b}}(\overline{\proj{\psi_{i,a}}}
 \end{equation}
 
 \subsection{$\PP_\epsilon(B=A|S)$:}
-Let $W_S = \sum_{i,a} q_i(\overline{\proj{\psi_{i,a}}} 
-\otimes \proj{\psi_{i,a\oplus 1}^\perp})$.
+Let $W_S = \sum_{i,a}  
+p_{i,a} \overline{\proj{\psi_{i,a}}} 
+\otimes \proj{\phi_{i,a}}$.
 \begin{equation}
 \begin{split}
 &\PP_\epsilon(B=A|S)\\ =& \min_{\Phi \sim \epsilon} \PP(B=A|S)\\
