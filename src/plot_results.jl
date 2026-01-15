@@ -1,6 +1,8 @@
 
 using Serialization
 using Printf
+using Plots
+include("struct.jl")
 
 function plot_results(filename::String)
     if !isfile(filename)
@@ -24,27 +26,37 @@ function plot_results(filename::String)
     end
     
     # Sort and print
+    # Sort and print
     println("\n--- CSV Data Format ---")
     println("N,Epsilon,KeyRate")
     
     sorted_Ns = sort(collect(keys(data_by_N)))
     
+    # Initialize plot
+    p = plot(title="SKR vs Epsilon", 
+             xlabel="Epsilon", 
+             ylabel="Key Rate (R)",
+             legend=:topright,
+             lw=2)
+
     for N in sorted_Ns
         points = sort(data_by_N[N], by=first) # Sort by epsilon
+        
+        eps_vals = [p[1] for p in points]
+        R_vals = [p[2] for p in points]
+        
+        # Print CSV lines
         for (eps, R) in points
             println("$N,$eps,$R")
         end
+        
+        # Add to plot
+        plot!(p, eps_vals, R_vals, label="N=$N", lw=2, marker=:circle, ms=3)
     end
     
-    println("\n--- Plotting Instructions ---")
-    println("You can use Plots.jl to visualize this:")
-    println("```julia")
-    println("using Plots")
-    println("using Serialization")
-    println("results = deserialize(\"$filename\")")
-    println("plot(title=\"SKR vs Epsilon\", xlabel=\"Epsilon\", ylabel=\"Key Rate\")")
-    println("# Iterate and plot curves for each N...")
-    println("```")
+    output_png = replace(filename, ".jls" => ".png")
+    savefig(p, output_png)
+    println("\nPlot saved to: $output_png")
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
