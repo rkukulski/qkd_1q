@@ -181,7 +181,8 @@ can be within the range. However, to obtain unconditional security of our QKD
 we can only assume that QBER is not greater than the threshold we defined.
 
 \section{Problem definition}
-For a given $\epsilon \in [0,1]$ and QKD protocol we can compute secure key 
+For a given $\epsilon \in [0,1]$ and QKD protocol $\QQ$ we can compute secure 
+key 
 ratio $R$ which tells how many secure bits Alice and Bob can agree per single 
 quantum experiment. We assume that Secure key agreement is done by 
 direct-reconciliation (without Advantage Distillation) and hence the ratio for 
@@ -191,40 +192,42 @@ symmetrization, we get $H(A|B)=H(B|A)=H_2(\PP(B=A|S))$. On the other hand
 $H(P|E)=H_2(\PP(E=P|S))$, where $P \in \{A,B\}$. Taking into 
 account the probability of success $\PP(S)$ we get
 \begin{equation}
-R = \PP(S)(\max_P H_2(\PP(E=P|S)) - H_2(\PP(B=A|S))).
+R(\QQ, E) = \PP(S)(\max_P H_2(\PP(E=P|S)) - H_2(\PP(B=A|S))).
 \end{equation}
 
 Let us put an important assumption for our QKD protocol. If $\epsilon=0$ 
 then the Secure key agreement should work at its best, which means parties' 
 raw keys are perfectly correlated, $\PP(B=A|S)=1$. Moreover, there is no 
 leakage of information to Eve, which is $\PP(E=P|S)=0.5$. Right now, we 
-would like to define \textbf{the worst case} SKR $R_\epsilon$ 
+would like to define \textbf{the worst case} SKR $R_\epsilon(\QQ)$ 
 within the 
-noise model with the intensity $\epsilon$. Note that $\PP(S)$ and $\PP(B=A|S)$ 
-can be optimized within the scope of the model. Although, to guarantee 
-unconditional security, the value of $\PP(E=P|S)$ will be optimized according 
-to the threshold given by $\PP(B=A|S)$.
+noise model with the intensity $\epsilon$. The value of $\PP(B=A|S)$ 
+can be optimized within the scope of the model we assumed. That value gives us 
+threshold for which we can optimize further $\PP(S)$ and Eve knowledge 
+$\PP(E=P|S)$ to guarantee unconditional security.
 
-We define
+We define:
 \begin{itemize}
-\item $\PP_\epsilon(S) = \min_{\Phi \sim \epsilon} \PP(S)$.
 \item $\PP_\epsilon(B=A|S) = \max\left\{\min_{\Phi \sim \epsilon} 
-\PP(B=A|S), \frac12 \right\}$.
+\PP(B=A|S), \frac12 \right\}$,
+\item $\PP_\epsilon(S) = \min_{\Phi}\{ \PP(S): \PP(B=A|S) \ge 
+\PP_\epsilon(B=A|S) \}$,
 \item $\PP_\epsilon(E=P|S) = \max_{E} \{\PP(E=P|S): \PP(B=A|S) \ge 
-\PP_\epsilon(B=A|S)\}$, where the maximization is over all Eve strategies.
+\PP_\epsilon(B=A|S)\}$.
 \end{itemize}
 
 \subsection{Goal}
-For a given $\epsilon \in [0,1]$ and the QKD protocol we define the worst case 
+For a given $\epsilon \in [0,1]$ and the QKD protocol $\QQ$ we define the worst 
+case 
 SKR as
 \begin{equation}
-R_\epsilon = \PP_\epsilon(S)(H_2(\min_P \PP_\epsilon(E=P|S)) - 
+R_\epsilon(\QQ) = \PP_\epsilon(S)(H_2(\min_P \PP_\epsilon(E=P|S)) - 
 H_2(\PP_\epsilon(B=A|S))).
 \end{equation}
 
 Our goal is to find (numerically / analytically)
 \begin{equation}
-R^*_\epsilon = \sup_{\text{QKD}}R_\epsilon.
+R^*_\epsilon = \sup_{\QQ \in \text{QKD}}R_\epsilon(\QQ).
 \end{equation}
 
 \section{Results}
@@ -248,8 +251,9 @@ q_i \frac{ p_{i,a \oplus 1}}{p_{i,0}+p_{i,1}} \proj{\psi_{i,a \oplus 1}^\perp}
 \subsection{Input:}
 $\epsilon \in [0,1]$
 \subsection{Output:}
-A function that computes $\epsilon \mapsto \sup_{\text{QKD}} R_\epsilon$, where 
-$R_\epsilon$ is the minimal SKR for given $\epsilon$ and QKD.
+A function that computes $\epsilon \mapsto \sup_{\QQ \in \text{QKD}} 
+R_\epsilon(\QQ)$, where 
+$R_\epsilon(\QQ)$ is the minimal SKR for given $\epsilon$ and QKD $\QQ$.
 
 \appendix
 \section{Mathematical objects}
@@ -320,21 +324,11 @@ Moreover, for each $i$
 there can not be any bias between $0$ and $1$. That indicate $\ket{\phi_{i,b}} 
 = \sqrt{\frac{ p_{i,b \oplus 1}}{p_{i,0}+p_{i,1}}q_i}\ket{\psi_{i,b\oplus 
 1}^\perp}$ for some $q_i > 0$.
-\subsection{$\PP_\epsilon(S)$:}
-Let $Q_S = \sum_{i,a,b}  
-p_{i,a} \overline{\proj{\psi_{i,a}}} 
-\otimes \proj{\phi_{i,b}}$.
-\begin{equation}
-\begin{split}
-\PP_\epsilon(S) &= \min_{\Phi \sim \epsilon} \PP(S)\\
-&=\min_{J_\Phi} \left( \tr\left(J_\Phi Q_S\right): J_\Phi \ge 0, \tr_2(J_\Phi) 
-= \Id_2,
-\frac14 \bra{\Id} J_\Phi \ket{\Id} \ge 1-\epsilon \right).
-\end{split}
-\end{equation}
 
 \subsection{$\PP_\epsilon(B=A|S)$:}
-Let $W_S = \sum_{i,a}  
+Let $Q_S = \sum_{i,a,b}  
+p_{i,a} \overline{\proj{\psi_{i,a}}} 
+\otimes \proj{\phi_{i,b}}$ and $W_S = \sum_{i,a}  
 p_{i,a} \overline{\proj{\psi_{i,a}}} 
 \otimes \proj{\phi_{i,a}}$.
 \begin{equation}
@@ -355,6 +349,24 @@ Q_S\right)}: J_\Phi \ge 0, \tr_2(J_\Phi)
 Q_S\right)=1 \right).
 \end{split}
 \end{equation}
+
+\subsection{$\PP_\epsilon(S)$:}
+Let $x = \PP_\epsilon(B=A|S)$. We have
+\begin{equation}
+\begin{split}
+\PP_\epsilon(S) &= \min_{\Phi}\{ \PP(S): \PP(B=A|S) \ge 
+x \}\\
+=&\min_{J_\Phi} \left(\tr\left(J_\Phi 
+Q_S\right):  \frac{\tr\left(J_\Phi W_S\right)}{\tr\left(J_\Phi 
+Q_S\right)} \ge x, J_\Phi \ge 0, \tr_2(J_\Phi) 
+= \Id_2 \right)\\
+=&\min_{J_\Phi} \left(\tr\left(J_\Phi 
+Q_S\right):  \tr\left(J_\Phi W_S\right)\ge x\tr\left(J_\Phi 
+Q_S\right), J_\Phi \ge 0, \tr_2(J_\Phi) 
+= \Id_2 \right).
+\end{split}
+\end{equation}
+
 
 
 
