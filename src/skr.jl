@@ -8,40 +8,6 @@ using Logging
 const ⊗ = kron
 const MOI = Convex.MOI
 
-
-function P_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
-    ent = ComplexF64.(vec(I(2)))
-    QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
-
-    J = ComplexVariable(4,4)
-    constraints = Constraint[]
-    push!(constraints, isposdef(J))
-    push!(constraints, partialtrace(J, 2, [2,2]) == I(2))
-    push!(constraints, real(ent'*J*ent) >= 4-4*eps)
-
-    f = real(tr(J*QS))
-
-    problem = minimize(f, constraints)
-    
-    with_logger(ConsoleLogger(stderr, Logging.Error)) do
-        solve!(
-            problem,
-            MOI.OptimizerWithAttributes(
-                Clarabel.Optimizer, 
-                "tol_gap_abs" => tol, 
-                "tol_gap_rel" => tol,
-                "tol_feas" => tol,
-                "verbose" => false
-            )
-        )
-    end
-    if problem.status != MOI.OPTIMAL && problem.status != MOI.ALMOST_OPTIMAL
-        @warn "P_eps problem not solved optimally: $(problem.status)"
-    end
-
-    return problem.optval
-end
-
 function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
     ent = ComplexF64.(vec(I(2)))
     QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
@@ -77,7 +43,40 @@ function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
     return max(problem.optval, 0.5)  
 end
 
-function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
+function P_eps(qkd::QKDProtocol, x::Real; tol=1e-7)
+    QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
+    WS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][a] for i=1:qkd.N, a=1:2)
+
+    J = ComplexVariable(4,4)
+    constraints = Constraint[]
+    push!(constraints, isposdef(J))
+    push!(constraints, partialtrace(J, 2, [2,2]) == I(2))
+    push!(constraints, real(tr(J*WS)) >= x*real(tr(J*QS)))
+
+    f = real(tr(J*QS))
+
+    problem = minimize(f, constraints)
+    
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
+        solve!(
+            problem,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer, 
+                "tol_gap_abs" => tol, 
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
+    if problem.status != MOI.OPTIMAL && problem.status != MOI.ALMOST_OPTIMAL
+        @warn "P_eps problem not solved optimally: $(problem.status)"
+    end
+
+    return problem.optval
+end
+
+function min_PE_eps(qkd::QKDProtocol, x::Real; tol=1e-7)
     # Eve[i][e] = (BI_in ⊗ BI_out) 
 
     MS = [[sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for a=1:2, b=1:2) for e=1:2] for i=1:qkd.N]
@@ -117,7 +116,7 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
         )
     end
     if problemA.status != MOI.OPTIMAL && problemA.status != MOI.ALMOST_OPTIMAL
-        @warn "min_PE_x (A) problem not solved optimally: $(problemA.status)"
+        @warn "min_PE_eps (A) problem not solved optimally: $(problemA.status)"
     end
     push!(results, problemA.optval)
 
@@ -137,7 +136,7 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
         )
     end
     if problemB.status != MOI.OPTIMAL && problemB.status != MOI.ALMOST_OPTIMAL
-        @warn "min_PE_x (B) problem not solved optimally: $(problemB.status)"
+        @warn "min_PE_eps (B) problem not solved optimally: $(problemB.status)"
     end
     push!(results, problemB.optval)
 
@@ -151,6 +150,6 @@ function R_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
         end
         return -a*log2(a) - (1-a)*log2(1-a)
     end
-    temp = PAB_eps(qkd, eps; tol=tol)
-    return P_eps(qkd, eps; tol=tol) * max((h2(min_PE_x(qkd, temp; tol=tol)) - h2(temp)), 0)
+    x = PAB_eps(qkd, eps; tol=tol)
+    return P_eps(qkd, x; tol=tol) * max((h2(min_PE_eps(qkd, x; tol=tol)) - h2(x)), 0)
 end
