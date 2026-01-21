@@ -3,18 +3,19 @@ using SCS
 include("../struct.jl")
 include("../skr.jl")
 include("bee.jl")
+include("basic.jl")
 include("../helpfulFunctions.jl")
 
 const ⊗ = kron
 const MOI = Convex.MOI
 
-qkds = get_qkds_1q()
+# qkds = get_qkds_1q()
 
 swarm_size = 20
 max_iter = 50
-epsilon = 0.1
+epsilon = 0.01
 
-best_qkd, best_R = BeeHeuristic(qkds[3], epsilon; swarm_size, max_iter)
+best_qkd, best_R = BeeHeuristic(BB84, epsilon; swarm_size, max_iter, optimizer=change_BB84, generate_random=random_BB84)
 
 println("Max R_eps = ", best_R)
 

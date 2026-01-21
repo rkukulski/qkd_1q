@@ -60,3 +60,42 @@ function perturb_protocol(qkd::QKDProtocol; perturb_val=0.1)
 
     return QKDProtocol(qkd.name * "_mut", p_rec, psi_rec, q_rec)
 end
+
+#BB84 protocol
+
+const BB84_PSI =     [
+        1 0;
+        0 1;;;
+        1 1;
+        1 -1
+    ]
+function random_BB84(name::String="BB84_random", N::Int=2)
+    p_rand = rand(N, 2) .+ 0.1
+    q_rand = rand(N) .+ 0.1
+    psi_array = deepcopy(BB84_PSI)
+
+    return QKDProtocol(name, p_rand, psi_array, q_rand)
+end
+
+function change_BB84(qkd::QKDProtocol; perturb_val=0.1)
+p_rec = deepcopy(qkd.p_array)
+    q_rec = deepcopy(qkd.q_array)
+
+    # Dodajemy losowy szum
+    p_rec .+= (randn(size(p_rec)) .* perturb_val)
+    q_rec .+= (randn(length(q_rec)) .* perturb_val)
+
+    # Przycinamy wartości
+    p_rec = clamp.(p_rec, 0.001, 1.0)
+    q_rec = clamp.(q_rec, 0.001, 1.0)
+
+    # Normalizacja
+    for i in 1:qkd.N
+        p_rec[i, :] ./= sum(p_rec[i, :])
+    end
+
+    # ψ kopiujemy dokładnie, bez zmiany
+    psi_rec = deepcopy(qkd.psi_array)
+    p_rec = deepcopy(qkd.p_array)
+    return QKDProtocol(qkd.name * "_mut", p_rec, psi_rec, q_rec)
+end

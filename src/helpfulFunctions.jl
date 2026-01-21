@@ -1,7 +1,7 @@
 include("struct.jl")
 
 function get_qkds_1q()
-    return [BB84, B92, six_state, high_rate, high_qber, test]
+    return [BB84, B92, six_state, high_rate, high_qber]
 end
 
 function save(filename::String, qkd::QKDProtocol, best_R::Real)
@@ -11,6 +11,8 @@ function save(filename::String, qkd::QKDProtocol, best_R::Real)
         N = qkd.N
         for i in 1:N
             println(io, "Element $i:")
+            println(io, "  p = ", qkd.p_array[i, :])
+            println(io, "  q = ", qkd.q_array[i])
             for a in 1:2
                 println(io, "  A[$a] = ")
                 show(IOContext(io, :limit => false), "text/plain", qkd.A[i][a])

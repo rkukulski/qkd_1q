@@ -6,13 +6,13 @@ include("../struct.jl")
 include("../skr.jl")
 
 
-function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, max_iter::Int=10)
+function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, max_iter::Int=10, optimizer::Function=perturb_protocol, generate_random::Function=random_protocol)
     """Initialize swarm"""
     swarm = Vector{QKDProtocol}(undef, swarm_size)
     swarm_R = Vector{Float64}(undef, swarm_size)
     
     Threads.@threads for i in 1:swarm_size
-        swarm[i] = random_protocol("Bee_$i", qkd_template.N)
+        swarm[i] = generate_random("Bee_$i", qkd_template.N)
         swarm_R[i] = R_eps(swarm[i], eps) 
     end
     
@@ -32,7 +32,7 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
 
         """Generate bees"""
         Threads.@threads for i in 1:swarm_size
-            new_proto = perturb_protocol(swarm[i];)
+            new_proto = optimizer(swarm[i];)
             new_R = R_eps(new_proto, eps)
             
             if new_R > swarm_R[i]
@@ -62,11 +62,11 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
             selected_idx = selections[k]
             
             target_proto = swarm[selected_idx]
-            new_proto = perturb_protocol(target_proto;)
+            new_proto = optimizer(target_proto;)
             new_R = R_eps(new_proto, eps)
             
             target_proto = swarm[selected_idx]
-            new_proto = perturb_protocol(target_proto;)
+            new_proto = optimizer(target_proto;)
             new_R = R_eps(new_proto, eps)
 
             lock(update_lock) do
@@ -85,7 +85,7 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
         """Scout bees"""
         Threads.@threads for i in 1:swarm_size
             if trials[i] > limit
-                new_proto = random_protocol("Scout_$i", qkd_template.N)
+                new_proto = generate_random("Scout_$i", qkd_template.N)
                 new_R = R_eps(new_proto, eps)
                 
                 # Safe to update slot i
