@@ -6,14 +6,19 @@ include("../struct.jl")
 include("../skr.jl")
 
 
-function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, max_iter::Int=10)
+function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; 
+    swarm_size::Int=5, 
+    max_iter::Int=10, 
+    penalty_weight::Real=0.0,
+    unbalanced::Bool=false
+)
     """Initialize swarm"""
     swarm = Vector{QKDProtocol}(undef, swarm_size)
     swarm_R = Vector{Float64}(undef, swarm_size)
     
     Threads.@threads for i in 1:swarm_size
-        swarm[i] = random_protocol("Bee_$i", qkd_template.N)
-        swarm_R[i] = R_eps(swarm[i], eps) 
+        swarm[i] = random_protocol("Bee_$i", qkd_template.N; unbalanced=unbalanced)
+        swarm_R[i] = calculate_fitness(swarm[i], eps, penalty_weight) 
     end
     
     trials = zeros(Int, swarm_size) # Number of trials without improvement
@@ -32,8 +37,8 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
 
         """Generate bees"""
         Threads.@threads for i in 1:swarm_size
-            new_proto = perturb_protocol(swarm[i];)
-            new_R = R_eps(new_proto, eps)
+            new_proto = perturb_protocol(swarm[i]; unbalanced=unbalanced)
+            new_R = calculate_fitness(new_proto, eps, penalty_weight)
             
             if new_R > swarm_R[i]
                 swarm[i] = new_proto
@@ -62,13 +67,9 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
             selected_idx = selections[k]
             
             target_proto = swarm[selected_idx]
-            new_proto = perturb_protocol(target_proto;)
-            new_R = R_eps(new_proto, eps)
+            new_proto = perturb_protocol(target_proto; unbalanced=unbalanced)
+            new_R = calculate_fitness(new_proto, eps, penalty_weight)
             
-            target_proto = swarm[selected_idx]
-            new_proto = perturb_protocol(target_proto;)
-            new_R = R_eps(new_proto, eps)
-
             lock(update_lock) do
                 if new_R > swarm_R[selected_idx] # Check against potentially updated value
                     swarm[selected_idx] = new_proto
@@ -85,8 +86,8 @@ function BeeHeuristic(qkd_template::QKDProtocol, eps::Real; swarm_size::Int=5, m
         """Scout bees"""
         Threads.@threads for i in 1:swarm_size
             if trials[i] > limit
-                new_proto = random_protocol("Scout_$i", qkd_template.N)
-                new_R = R_eps(new_proto, eps)
+                new_proto = random_protocol("Scout_$i", qkd_template.N; unbalanced=unbalanced)
+                new_R = calculate_fitness(new_proto, eps, penalty_weight)
                 
                 # Safe to update slot i
                 swarm[i] = new_proto
