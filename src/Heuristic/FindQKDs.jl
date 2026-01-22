@@ -6,6 +6,8 @@ include("../struct.jl")
 include("../skr.jl")
 include("bee.jl")
 include("ga.jl")
+include("optim_nm.jl")
+include("optim_grad.jl")
 include("../helpfulFunctions.jl")
 
 const ⊗ = kron
@@ -14,7 +16,7 @@ const MOI = Convex.MOI
 # --- Configuration ---
 N = 4
 epsilon = 0.01
-method = :bee # :bee or :ga
+method = :nm # :bee, :ga, :nm, :grad
 seed_from_N2 = true
 penalty_weight = 0.5
 unbalanced = true
@@ -52,6 +54,16 @@ elseif method == :ga
         max_gen=ga_max_gen, 
         mutation_rate=ga_mutation_rate,
         crossover_rate=ga_crossover_rate,
+        penalty_weight=penalty_weight,
+        unbalanced=unbalanced)
+elseif method == :nm
+    NelderMeadOptim(initial_protocol, epsilon; 
+        max_iter=bee_max_iter, # Reusing max_iter for simplicity
+        penalty_weight=penalty_weight,
+        unbalanced=unbalanced)
+elseif method == :grad
+    GradientOptim(initial_protocol, epsilon; 
+        max_iter=bee_max_iter, 
         penalty_weight=penalty_weight,
         unbalanced=unbalanced)
 else

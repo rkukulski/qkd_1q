@@ -137,3 +137,74 @@ function seed_protocol(qkd::QKDProtocol, N_target::Int)
     
     return QKDProtocol(qkd.name * "_seeded_$N_target", p_new, psi_new, q_new)
 end
+
+"""
+Convert QKDProtocol to a flat vector of parameters for optimization.
+"""
+function protocol_to_vector(qkd::QKDProtocol)
+    N = qkd.N
+    # Parameters:
+    # 1. psi_array: 2 angles (theta, phi) for each state. (2 states per i -> 2*2*N)
+    # 2. p_array: log(p) (N*2)
+    # 3. q_array: log(q) (N)
+    
+    vec = Float64[]
+    
+    # States
+    for i in 1:N, a in 1:2
+        psi = qkd.psi_array[:, a, i]
+        # Using spherical coordinates for qubit: [cos(theta/2), exp(im*phi)*sin(theta/2)]
+        # We assume first element is real and positive (global phase ignored)
+        # alpha = cos(theta/2) -> theta = 2 * acos(abs(alpha))
+        # phi = angle(exp(im*phi))
+        theta = 2 * acos(clamp(abs(psi[1]), 0.0, 1.0))
+        phi = angle(psi[2]/psi[1])
+        push!(vec, theta, phi)
+    end
+    
+    # p_array
+    for i in 1:N, a in 1:2
+        push!(vec, log(max(qkd.p_array[i, a], 1e-10)))
+    end
+    
+    # q_array
+    for i in 1:N
+        push!(vec, log(max(qkd.q_array[i], 1e-10)))
+    end
+    
+    return vec
+end
+
+"""
+Convert a flat vector of parameters back to a QKDProtocol.
+"""
+function vector_to_protocol(params::Vector{Float64}, N::Int, name::String="opt")
+    psi_array = zeros(ComplexF64, 2, 2, N)
+    p_array = zeros(N, 2)
+    q_array = zeros(N)
+    
+    idx = 1
+    # States
+    for i in 1:N, a in 1:2
+        theta = params[idx]; idx += 1
+        phi = params[idx]; idx += 1
+        psi_array[1, a, i] = cos(theta/2)
+        psi_array[2, a, i] = exp(1im*phi) * sin(theta/2)
+    end
+    
+    # p_array
+    for i in 1:N, a in 1:2
+        p_array[i, a] = exp(params[idx]); idx += 1
+    end
+    # Normalize p_array rows
+    for i in 1:N
+        p_array[i, :] ./= sum(p_array[i, :])
+    end
+    
+    # q_array
+    for i in 1:N
+        q_array[i] = exp(params[idx]); idx += 1
+    end
+    
+    return QKDProtocol(name, p_array, psi_array, q_array)
+end

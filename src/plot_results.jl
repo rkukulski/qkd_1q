@@ -62,8 +62,15 @@ function plot_results(filename::String)
             ls = :dashdot
         end
         
-        # Use different markers for ABC vs GA
-        m = contains(cfg_name, "GA") ? :square : :circle
+        # Use different markers for different methods
+        m = :circle
+        if contains(cfg_name, "GA")
+            m = :square
+        elseif contains(cfg_name, "NM")
+            m = :diamond
+        elseif contains(cfg_name, "Grad")
+            m = :utriangle
+        end
         
         plot!(p, eps_vals, R_vals, 
               label="N=$N ($cfg_name)", 

@@ -12,6 +12,8 @@ include("struct.jl")
 include("skr.jl")
 include("Heuristic/bee.jl")
 include("Heuristic/ga.jl")
+include("Heuristic/optim_nm.jl")
+include("Heuristic/optim_grad.jl")
 include("Heuristic/basic.jl")
 
 function generate_curves()
@@ -32,6 +34,10 @@ function generate_curves()
         (name="GA_Penalty", method=:ga, penalty=0.5, unbalanced=false),
         (name="GA_Unbal", method=:ga, penalty=0.0, unbalanced=true),
         (name="GA_Both", method=:ga, penalty=0.5, unbalanced=true),
+        (name="NM_Std", method=:nm, penalty=0.0, unbalanced=false),
+        (name="NM_Penalty", method=:nm, penalty=0.5, unbalanced=false),
+        (name="Grad_Std", method=:grad, penalty=0.0, unbalanced=false),
+        (name="Grad_Penalty", method=:grad, penalty=0.5, unbalanced=false),
     ]
     
     timestamp = Dates.format(now(), "yyyymmdd_HHMMSS")
@@ -57,9 +63,17 @@ function generate_curves()
                     BeeHeuristic(template, eps; 
                         swarm_size=swarm_size, max_iter=max_iter, 
                         penalty_weight=cfg.penalty, unbalanced=cfg.unbalanced)
-                else
+                elseif cfg.method == :ga
                     GeneticAlgorithm(template, eps; 
                         pop_size=swarm_size, max_gen=max_iter, 
+                        penalty_weight=cfg.penalty, unbalanced=cfg.unbalanced)
+                elseif cfg.method == :nm
+                    NelderMeadOptim(template, eps; 
+                        max_iter=max_iter, 
+                        penalty_weight=cfg.penalty, unbalanced=cfg.unbalanced)
+                elseif cfg.method == :grad
+                    GradientOptim(template, eps; 
+                        max_iter=max_iter, 
                         penalty_weight=cfg.penalty, unbalanced=cfg.unbalanced)
                 end
                 dt = time() - t_start

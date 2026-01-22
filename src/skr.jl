@@ -21,7 +21,7 @@ function P_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
 
     f = real(tr(J*QS))
 
-    problem = minimize(f, constraints)
+    problem = Convex.minimize(f, constraints)
     
     with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
@@ -56,7 +56,7 @@ function PAB_eps(qkd::QKDProtocol, eps::Real; tol=1e-7)
 
     f = real(tr(J*WS))
 
-    problem = minimize(f, constraints)
+    problem = Convex.minimize(f, constraints)
     
     with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
@@ -103,7 +103,7 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
 
     # A
     fA = real(sum(tr(Eve[i][e]*MEA[i][e]) for i=1:qkd.N, e=1:2))
-    problemA = maximize(fA, constraints)
+    problemA = Convex.maximize(fA, constraints)
     with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problemA,
@@ -123,7 +123,7 @@ function min_PE_x(qkd::QKDProtocol, x::Real; tol=1e-7)
 
     # B
     fB = real(sum(tr(Eve[i][e]*MEB[i][e]) for i=1:qkd.N, e=1:2))
-    problemB = maximize(fB, constraints)
+    problemB = Convex.maximize(fB, constraints)
     with_logger(ConsoleLogger(stderr, Logging.Error)) do
         solve!(
             problemB,
