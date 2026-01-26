@@ -72,7 +72,8 @@ end
 Calculate fitness with optional overlap penalty.
 """
 function calculate_fitness(qkd::QKDProtocol, eps::Real, penalty_weight::Real=0.0)
-    skr = R_eps(qkd, eps)
+    # Use raw rate to allow negative values for gradient
+    skr = R_eps_raw(qkd, eps)
     if penalty_weight <= 0
         return skr
     end
@@ -91,7 +92,8 @@ function calculate_fitness(qkd::QKDProtocol, eps::Real, penalty_weight::Real=0.0
     
     # Normalized overlap penalty
     penalty = penalty_weight * (total_overlap / (N*(N-1)/2))
-    return max(skr - penalty, 0.0)
+    # Return raw value potentially < 0
+    return skr - penalty
 end
 
 """

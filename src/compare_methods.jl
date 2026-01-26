@@ -4,6 +4,9 @@ include("Heuristic/bee.jl")
 include("Heuristic/ga.jl")
 include("Heuristic/optim_nm.jl")
 include("Heuristic/optim_grad.jl")
+include("Heuristic/grid_search.jl")
+include("Heuristic/cmaes.jl")
+# include("Heuristic/gpu/gpu_search.jl") # GPU disabled pending fix
 
 function compare_all_methods(eps::Real, N_range::UnitRange{Int})
     # Hyperparameters
@@ -12,10 +15,14 @@ function compare_all_methods(eps::Real, N_range::UnitRange{Int})
     penalty_weight = 0.5
     
     methods = [
-        (name="Bee (ABC)     ", func=(q, e) -> BeeHeuristic(q, e; swarm_size=swarm_size, max_iter=max_iter, penalty_weight=penalty_weight)),
+        # (name="Simulated Annealing", func=(q, e) -> SimulatedAnnealing(q, e; max_iter=max_iter, penalty_weight=penalty_weight)),
+        (name="ABC (Bee Colony) ", func=(q, e) -> BeeHeuristic(q, e; swarm_size=swarm_size, max_iter=max_iter, penalty_weight=penalty_weight)),
         (name="GA            ", func=(q, e) -> GeneticAlgorithm(q, e; pop_size=swarm_size, max_gen=max_iter, penalty_weight=penalty_weight)),
         (name="Nelder-Mead   ", func=(q, e) -> NelderMeadOptim(q, e; max_iter=max_iter, penalty_weight=penalty_weight)),
         (name="L-BFGS (Grad) ", func=(q, e) -> GradientOptim(q, e; max_iter=max_iter, penalty_weight=penalty_weight)),
+        (name="CMA-ES        ", func=(q, e) -> CMAES(q, e; max_iter=max_iter, penalty_weight=penalty_weight)),
+        # (name="Grid Search   ", func=(q, e) -> GridSearch(q, e; divs=10, penalty_weight=penalty_weight)), # Warning: Very slow for N > 1
+        # (name="Grid Search GPU", func=(q, e) -> GridSearchGPU(q, e; divs=5)), # GPU
     ]
     
     println("="^60)
@@ -63,7 +70,7 @@ end
 
 # Default values
 eps = 0.07247318059785
-N_range = 2:6
+N_range = 1:6
 
 if length(ARGS) >= 1
     eps = parse(Float64, ARGS[1])
