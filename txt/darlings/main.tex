@@ -7,6 +7,7 @@
 \usepackage{textcomp}
 \usepackage{hyperref}
 \usepackage{braket}
+\usepackage[table]{xcolor}
 
 \usepackage{graphicx}
 \usepackage[textheight=20 cm, textwidth=15cm, headheight=50pt, headsep=10pt, footskip=32pt]{geometry}
@@ -22,8 +23,6 @@
 \usepackage{tikz}
 \usepackage{lipsum}
 % \usepackage{etoolbox}
-\usepackage[table]{xcolor} 
-\usepackage{colortbl}
 
 % \usepackage[backend=biber]{biblatex}
 % \addbibresource{qkd.bib}
@@ -49,9 +48,6 @@
 \author{Paulina Lewandowska}
 \affiliation{IT4Innovations, VSB~-~Technical University of Ostrava, 17.~listopadu 2172/15, 708 33 Ostrava, Czech Republic}
 \orcid{0000-0003-1564-7782}
-\author{...}
-\affiliation{...}
-\orcid{...}
 \maketitle
 
 \begin{abstract}
@@ -66,6 +62,12 @@ Quantum cryptography studies cryptographic primitives whose security stems from 
 This work takes a complementary route: we design a prepare-and-measure protocol that explicitly exploits discrimination of quantum measurements. In particular, we use results on single-shot discrimination of von Neumann measurements, quantified via the diamond-norm distance and solvable by cone/semidefinite programs, to inform our choice of preparation ensemble, Bob’s measurement family, and a deterministic acceptance (post-selection) rule~\cite{Puchala2018VNM}. Intuitively, acceptance regions that are hard for an eavesdropper’s effective measurement to emulate, yet remain reliable for Bob, enlarge the security margin at fixed quantum bit error rate (QBER). We formalize the resulting Eve–Bob trade-off as an SDP, compare against BB84/MDI-style sifting, and identify operating points where the induced measurement-discrimination gap yields improved tolerable QBER without collapsing the protocol’s success probability \cite{BB84,LoCurtyQi2012,Puchala2018VNM}.
 
 Finally, we situate the protocol within the standard post-processing pipeline—parameter estimation, error correction, and privacy amplification—highlighting how the measurement-discrimination perspective guides acceptance thresholds and finite-size budgeting \cite{ScaraniRMP2009,XuRMP2020}.
+
+\section{Protocol Landscape and Related Work}
+Current QKD implementations span four practical classes: prepare-and-measure protocols, entanglement-based protocols, measurement-device-independent (MDI) protocols, and device-independent (DI) protocols \cite{lo2014secure,XuRMP2020,LoCurtyQi2012,DIQKDReview2023}. BB84 and B92 remain canonical prepare-and-measure references \cite{BB84,B92}, while six-state (SSP) and SARG04 represent security-oriented variants that trade efficiency for stronger disturbance sensitivity \cite{SSP,SARG04}. Entanglement-based baselines such as E91 and BBM92 provide a different security viewpoint based on nonlocal correlations and shared-state verification \cite{ekert1991quantum,B92ent}.
+
+For high-rate or long-distance deployments, modern systems increasingly combine implementation-layer improvements with protocol-level asymmetry. Representative examples include unbalanced/decoy-inspired BB84 variants such as T12, and twin-field style approaches that improve rate-distance scaling without trusted repeaters \cite{T12,rate_distance}. Our protocol is positioned as a prepare-and-measure design that explicitly optimizes the Bob-versus-Eve discrimination gap under a single-qubit transmission model, rather than as an MDI or DI construction.
+
 \section{Results} 
 
 
@@ -420,10 +422,26 @@ for $\epsilon\to0$.
 
 \subsection{Error correction and privacy amplification}
 
+\subsection{Numerical artifact contract}
+To bridge manuscript claims with reproducible computations, we define the output interface expected from the codebase.
+\begin{itemize}
+    \item \texttt{three\_case\_curves.csv}: pointwise SKR curves with columns \texttt{case,epsilon,R,x\_opt,y\_opt}.
+    \item \texttt{three\_case\_curves.pdf}/\texttt{three\_case\_curves.png}: publication figures generated from the CSV above.
+    \item \texttt{validation\_points.csv}: validation grid with columns \texttt{epsilon,case1\_R,case2\_R,case3\_R,upper\_bound,gap\_case1,gap\_case2,gap\_case3,best\_case,case1\_x\_opt,case2\_x\_opt,case2\_y\_opt,case1\_best\_seed,case2\_best\_seed}.
+    \item \texttt{validation\_summary.csv}: rows of type \texttt{stats}/\texttt{crossover} with columns \texttt{row\_type,case,epsilon,mean,std,min,max,best\_seed,best\_R,crossover\_from,crossover\_to,crossover\_est\_eps,bracket\_eps\_left,bracket\_eps\_right}.
+    \item \texttt{validation\_meta.json}: machine-readable run metadata including \texttt{created\_at,eps\_min,eps\_max,eps\_step,eps\_count,restarts,tol,seed,suppress\_warnings,git\_commit,runtime\_seconds}.
+    \item \texttt{validation\_curves.pdf}/\texttt{validation\_curves.png} and \texttt{validation\_gaps.pdf}/\texttt{validation\_gaps.png}: manuscript-ready plots generated from \texttt{validation\_points.csv}.
+\end{itemize}
+The accepted schema is the contract for subsequent automation of manuscript tables and comparison figures.
+
 \section{Data availability}
-Data sharing is not applicable to this article, as no data sets were generated and analyzed during the current study.
+The numerical datasets used for curve generation are produced directly by the analysis scripts and stored as CSV/JSON artifacts in the project repository.
 \section{Code availability}
-The underlying code [and training/validation datasets] for this study is available in [repository name] and can be accessed via this link [insert persistent URL to code]. 
+Code and reproducibility artifacts are maintained in the project repository.
+\textbf{TODO(repository URL):} replace this sentence with the final persistent public URL before submission.
+
+\appendix
+\input{appendix_protocol_catalog.tex}
 
 \bibliographystyle{ieeetr}
 \bibliography{qkd.bib}
@@ -433,9 +451,9 @@ The underlying code [and training/validation datasets] for this study is availab
 High-tech Industries project number CZ.10.03.01/00/22\_003/0000048 via the Operational Programme Just Transition.  
 RK is supported by the European Union under the REFRESH – Research Excellence For REgionSustainability and
 High-tech Industries project number CZ.10.03.01/00/22\_003/0000048 via the Operational Programme Just Transition.  
-\section*{Auhtor Contributions}
- use initials \\
-... developed, ... performed. All authors read and approved the final manuscript.
+\section*{Author Contributions}
+R.K. developed the theoretical framework and primary manuscript draft. P.L. implemented and curated the computational experiments and generated the figures.
+\textbf{TODO(author list):} add final contribution statements for any additional co-authors before submission.
 \section*{Competing interests}
 The authors declare no conflict of interest.
 \end{document}
