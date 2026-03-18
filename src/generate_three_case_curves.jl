@@ -166,6 +166,15 @@ function optimize_case2_at_epsilon(
     delta = 0.5
     best = safe_case2_score(eps, u, v; tol = tol)
 
+    # If the warm-start position is degenerate at this epsilon, use the global
+    # scan result as the new starting point and continue with the warm-start loop.
+    if best[1] <= 1e-6
+        gs = global_scan_case2(eps; tol = tol)
+        best = gs
+        u = gs[2]
+        v = gs[3]
+    end
+
     for _ in 1:8
         center = (clamp(u, UMIN, UMAX), clamp(v, VMIN, VMAX))
         cands = [
@@ -174,6 +183,8 @@ function optimize_case2_at_epsilon(
             (clamp(u + delta, UMIN, UMAX), clamp(v, VMIN, VMAX)),
             (clamp(u, UMIN, UMAX), clamp(v - delta, VMIN, VMAX)),
             (clamp(u, UMIN, UMAX), clamp(v + delta, VMIN, VMAX)),
+            (clamp(u - delta, UMIN, UMAX), clamp(v - delta, VMIN, VMAX)),
+            (clamp(u + delta, UMIN, UMAX), clamp(v + delta, VMIN, VMAX)),
             (0.0, 0.0),
             (0.0, clamp(v, VMIN, VMAX)),
             (clamp(u, UMIN, UMAX), 0.0)
