@@ -1,0 +1,309 @@
+\documentclass[12pt,a4paper,reqno, aps, superscriptaddress]{amsart}
+
+% \usepackage[colorlinks=true,citecolor=blue,urlcolor=blue]{hyperref}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+\usepackage[textheight=20 cm, textwidth=15cm, headheight=50pt, headsep=10pt, footskip=32pt]{geometry}
+
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[foot]{amsaddr}
+\usepackage{mathtools}
+\usepackage{dsfont}
+
+\usepackage{physics}
+\usepackage{tikz}
+\input{qcircuit.tex}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[normalem]{ulem} 
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[table]{xcolor}
+\usepackage{orcidlink}
+\usepackage{diagbox}
+\usepackage{booktabs}
+\usepackage{dcolumn}
+\usepackage{appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\Id}{{\rm 1\hspace{-0.9mm}l}}
+\newcommand{\C}{\ensuremath{\mathbb{C}}}
+\newcommand{\PP}{\ensuremath{\mathcal{P}}}
+\newcommand{\QQ}{\ensuremath{\mathcal{Q}}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\renewcommand{\AA}{\ensuremath{\mathcal{A}}}
+\newcommand{\BB}{\ensuremath{\mathcal{B}}}
+\newcommand{\p}{\ensuremath{p_{\mathrm{I}}}}
+\newcommand{\pp}{\ensuremath{p_{\mathrm{II}}}}
+\newcommand{\proj}[1]{\ensuremath{\ketbra{#1}{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title[Quantum key distribution]{Quantum key distribution with single-qubit transmission}
+
+\author{Ryszard Kukulski$^1$\orcidlink{0000-0002-9171-1734}}
+\author{Paulina Lewandowska$^1$\orcidlink{0000-0003-1564-7782}}
+\author{... dopiszcie sie}
+
+\address{$^1$IT4Innovations, VSB~-~Technical University of Ostrava, 17.~listopadu 2172/15, 708 33 Ostrava, Czech Republic}
+\address{$^*$ \textit{Corresponding author. E-mail: \texttt{ryszard.stefan.kukulski@vsb.cz}}} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\maketitle
+
+\section{Things to do:}
+\begin{enumerate}
+\item Lista metod QKD, w ktorych aby uzyskac bit klucza przesyla się 1 qubit na runde + klasyczna komunikacja, (z referencjami)
+\item Lista metod QKD z listy patentowej, (z referencjami)
+\item Opracowac procedure dla problemu z Section~\ref{sec-c-communication}.
+\item Kontakt z zainteresowanymi rozwiazaniem partnerami (temat: nasza oferta protokolu, nasze wymagania, mozliwosci techniczne, wymagania techniczne)
+\item Przeszukiwanie mozliwych protokolow ktore maja interesujace wlasnosci na podstawie schematu Section~\ref{sec-qkd-standard}.
+\item Znane protokoly kwantowe zapisac do naszego frameworku i dodac do SDP
+\end{enumerate}
+
+\section{People:}
+\begin{itemize}
+    \item Ryszard Kukulski: 1,2,3,5,6
+    \item Paulina Lewandowska: 5,6
+    \item Łukasz Pawela: 2,5
+    \item Zbigniew Puchała: 5
+    \item Norbert Luchowski: 1,3,6
+    \item Michał Wroński: 4
+    \item Mateusz Leśniak: 4
+\end{itemize}
+
+\newpage
+
+\section{QKD list:}
+\begin{itemize}
+    \item BB84 \checkmark
+    \item E91 \checkmark
+    \item BBM92
+    \item B92 \checkmark
+    \item MSZ96
+    \item SSP
+    \item Decoy state (?)
+    \item PBC00
+    \item R04
+    \item SARG04 \checkmark
+    \item KMB09 \url{https://doi.org/10.1088/1367-2630/11/6/063043}
+    \item T12 \url{https://doi.org/10.1364/OE.21.024550}
+\end{itemize}
+
+
+
+\section{General QKD-1q protocol description}\label{sec-general-QKD}
+
+The general setup of the QKD-1q protocol can be presented in Fig.\ref{fig-protocol}. In Appendix \ref{sec-qkd-standard} we explain the details of QKD-1q standardization. 
+
+In the following protocol, we assume that Alice sends a quantum state $\ket{\psi_a} \in \C^2$ that is randomly generated with a probability distribution $P(a)$ where $a = 1, \ldots, L_a$. Bob, whereas, prepares POVM $\Omega = \{\proj{\phi_b}\}_b$ for $b=1,\ldots,L_b$ obtaining a label $b$. 
+In the postprocessing stage, Alice and Bob communicate publicly to implement a decision function $f(a, b)$. With that, they can conclude the protocol with success $S$ or abort key generation. If $S$, then they are able to generate a bit of key $A$ - for Alice and $B$ - for Bob.
+The potential Eve attack is described by operator $E$ and finally Eve prepares $\Upsilon_{f(a,b)}$ based on the decision function $f(a,b)$. 
+
+\begin{figure}[ht!]
+	\begin{align*}
+	\begin{aligned}
+	\Qcircuit @C=1em @R=.7em {
+		\prepareC{\ket{\psi_{a}}}	& \qw & \multigate{1}{E} 
+		& \gate{\Omega} & \measureD{b}[0] \cw   \\
+		 & & \pureghost{E} & \qw & \qw & \gate{\Upsilon_{f(a,b)}} & \measureD{e}[0] \cw
+	}
+	\end{aligned}
+	\end{align*}
+    \caption{The general setup of QKD-1q protocol.}
+    \label{fig-protocol}
+\end{figure}
+
+
+
+\subsection{Classical communication $f$ and key generation}\label{sec-c-communication}
+Let $P = [P(b,a)]_{b,a}$ be a matrix of probabilities obtaining the label $a$ and $b$ for  Alice and Bob, respectively. Let us now assume that $P(b,a) > 0$ (noiseless, without the intervention of Eve). We analyze how $f$ looks like. There are two possible scenarios:
+\begin{enumerate}
+    \item There are labels $a' \neq a$ and $b' \neq b$ such that it holds $P' = \begin{pmatrix} P_{b,a'} & P_{b,a} \\
+    P_{b',a'} & P_{b',a} \end{pmatrix}= \begin{pmatrix} 0 & P_{b,a} \\
+    P_{b',a'} & 0 \end{pmatrix}$. If communication protocol $f$ agrees on $P'$, that is $a \in \{a,a'\}, b \in \{b,b'\}$, then $S$. Alice and Bob agree that key is $0$ for $a,b$ and $1$ for $a',b'$ or reversely, with probability $50\%/50\%$. If $f$ does not find $P'$, then $\neg S$. In that case $a',b'$ are unique.
+    \item The case $(1)$ does not hold. Then $\neg S$.
+\end{enumerate}
+
+\todo[inline]{Opracowac metode generowania $f$, tzn. jezeli $P'$ istnieje, jak czesto mozemy przy pomocy $f$ ja zdefiniowac}
+
+
+\section{Black-box measures}\label{sec-measures}
+\begin{itemize}
+    \item Probability that the protocol will succeed $P(S)>0$.
+    \item Probability of successful key generation $P(B=A|S)=1$.
+    \item Probability of eavesdropping $P_E(E=A|S)$.
+    \item Security check $P_E(b,a) \sim P(b,a)$.
+\end{itemize}
+
+We can vary with schemes to achieve various properties of QKD. For example we can construct protocol that $P(S) \to 1$ and $P(B=A|S) = 1$, which means the key ratio goes to $1$ but to guarantee the security of our protocol we need almost perfect QC. Moreover, in that case even tiny interaction with Eve will suspend the key generation $P_E(S) \to 0$. 
+
+
+\subsection{RK: Proposition of the goal}
+The precision of QC will increase over the time, but we can not assume that it will be perfect eventually. However, the presence of Eve should always be considered. If our protocol is weak she would try to hide herself and gain the knowledge about the key. However, if our protocol is secure, she might want to abort our procedure. 
+
+Therefore, we would like to find \textbf{the most secure} QKD-1q procedure that tolerates some level (as a parameter) of Eve presence. For example, would like to accept the key generation even if combined error resulting from faulty hardware and Eve interactions is not greater than $10\%$. The QKD-1q protocol should have ratio $P_E(B=A|S)/P_E(E=A|S) \to 2$, with reasonable level of $P_E(S) > 0$.
+
+The task would be: assuming compliance level $q$ find a QKD-1q protocol that $P_E(S) > ?$, $P_E(B=A|S)\ge q$ and $P_E(E=A|S) \to 0.5$. 
+
+\section{BB84 protocol as QKD-1q}
+
+In this section, we show how to determine the BB84 protocol as QKD-1q presented in Fig.\ref{fig-protocol}. We need describe the following parameters: 
+\begin{itemize}
+    \item Distribution: $P(a)$ for $a=1,\ldots,L_a$. 
+    \item Quantum states: $ \ket{\psi_a}$ for $a=1,\ldots,L_a$ that are pairwise different.
+    \item POVM: $\Omega = \{\proj{\phi_b}\}_b$ for $b=1,\ldots,L_b$ where effects are pairwise different.
+    \item Decision function: $f(a, b)$.
+\end{itemize} 
+
+Originally, Alice creates a random bit, 0 or 1, and then randomly selects one of her two bases $\{ \ket{0}, \ket{1}\}$ or $\{\ket{+}, \ket{-}\} $ and sends it to Bob. As Bob does not know the basis the qubit were encoded in,  all he can do is to select a basis at random to measure in the Z-basis or X-basis. 
+
+For this purpose, Alice sends one of four quantum states $ \{ \ket{0}, \ket{1}, \ket{+}, \ket{-} \} $ with uniform distribution, e.g. $P(a) = \frac{1}{4} $ for each $a$. Finally, Bob creates the POVM $\Omega$ with effects $\{ \frac{1}{2}\proj{0}, \frac{1}{2}\proj{1}, \frac{1}{2}\proj{+}, \frac{1}{2} \proj{-} \} $. 
+Then, the matrix of probabilities $P = [P(b,a)]_{b,a}$ is given by 
+\begin{center}
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+\cellcolor[HTML]{AA0044} 0 & \cellcolor[HTML]{AA0044} 1/8 & 1/16 & 1/16  \\ \hline  
+ \cellcolor[HTML]{AA0044} 1/8 & \cellcolor[HTML]{AA0044} 0 & 1/16 & 1/16  \\ \hline 
+ 1/16 & 1/16 & \cellcolor[HTML]{AA0044} 0 & \cellcolor[HTML]{AA0044} 1/8  \\  \hline
+ 1/16 & 1/16 & \cellcolor[HTML]{AA0044} 1/8 & \cellcolor[HTML]{AA0044} 0 \\ \hline
+\end{tabular}
+\end{center}
+
+Let us now consider how we can describe the function $f(a,b)$. In BB84, Alice and Bob jointly keep only the bits for which the bases were consistent (they discard the rest).
+So now we accept only the results marked in red colors (the upper left corner with probability 1/2 and lower right corner with probability 1/2). Then, the function $f(a,b)$ is taken for pairs $(1,2)$ and $(3,4)$ with probability $\frac{1}{2}$ for both pairs.
+\begin{figure}[hpt!]
+    \centering
+    \includegraphics[width=1\linewidth]{BB84_f.pdf}
+    \caption{BB84 protocol with different decision functions. The origin decision function is described by green line. The modifications $f_2$ and $f_6$ are described by red and blue lines, respectively, obtaining the advantage over the origin one. Originally BB84 takes $P'$ given by indices $1,2$ and $3,4$. Modification $f_2$ takes indices $1,3$ and $1,4$ while $f_6$ modification takes all indices pairs $i,j$ for $i<j$.}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+\section{Analysis}\label{sec-analysis}
+Updated parameters:
+\begin{itemize}
+    \item Distribution: $P(a)$ for $a=1,\ldots,L_a$. 
+    \item Quantum states: $ \ket{\psi_a}$ for $a=1,\ldots,L_a$ that are pairwise different.
+    \item POVM: $\Omega = \{\proj{\phi_b}\}_b$ for $b=1,\ldots,L_b$ where effects are pairwise different. To generate $P(S) > 0$ and $P(A=B|S) = 1$ we need at least one $P'$. Let $2\le x\le \min(L_a,L_b)$ be a number such that $\mathrm{diag}([P_{b,a}]_{b,a=1}^x) = 0$, that means $\ket{\phi_b} \propto \ket{\psi^\perp_b}$ for $b=1,\ldots,x$.  
+    \item Decision function: $f(a, b)$ contains list of $P'$ and distribution for choosing them $P(P')$.
+    \item Eve measurement actions can be indexed by $P'$, that is $\Upsilon_{P'}$. If $S$ then $e \to E$. Otherwise, $e$ is discarded but the choice of $\Upsilon_{P'}$ does not change the statistics of $P_E(b,a)$.
+\end{itemize}
+
+Independent probabilities: 
+\begin{equation}
+    P(a), P(P')
+\end{equation}
+
+Dependent probability:
+\begin{equation}
+    P(e,b|a,P')
+\end{equation}
+
+Probability of success:
+\begin{equation}
+    P_E(S) = \sum_{a,P'} P(a)P(P') P_E(S|a,P')=\sum_{P'} P(P') \sum_{(a,b) \in P'} P(a) \sum_e P(e,b|a,P').
+\end{equation}
+
+Probability of key compliance and success:
+\begin{equation}
+\begin{split}
+    P_E(S \wedge K=A) =\sum_{P'} P(P') \sum_{e,(a,b) \in P'} P(a) P_E(K=A,e,b|a,P').
+\end{split}
+\end{equation}
+
+Probability of key compliance Bob and success:
+\begin{equation}
+\begin{split}
+    P_E(S \wedge B=A) =\sum_{P'} P(P') \sum_{(a,b) \in P', a\neq b} P(a) \sum_e P(e,b|a,P').
+\end{split}
+\end{equation}
+
+Probability of key compliance Eve and success:
+\begin{equation}
+\begin{split}
+    P_E(S \wedge E=A) =\sum_{P'} P(P') \sum_{(a,b) \in P'} P(a) P(a',b|a,P').
+\end{split}
+\end{equation}
+
+\subsection{SDP}
+We want to solve $y(x) = \sup_E\left\{ P_E(E=A|S): P_E(B=A|S) \ge x\right\}$. Note that for any $E$ we have $P_E(S) \ge \epsilon > 0$ for some $\epsilon$ due to our QKD-1q construction. Hence $y(x) = \max_E\left\{ P_E(E=A|S): P_E(B=A|S) \ge x\right\}$ is achievable. Now, define Eve strategy $E = \sum_{e,P'} \proj{e} \otimes \proj{P'} \otimes E_{e,P'} \ge 0$ with additional quantum network conditions: $E = \sum_{e,P'} \proj{P'} \otimes E_{e,P'} = \Id_{P'} \otimes M$ and $\tr_{B}(M) = \Id_A$. In the optimization problem $y(x)$ we can relax the last condition: $0 \neq \tr_{B}(M) \propto \Id_A$. Our problem reads
+\begin{equation}
+    \begin{split}
+        y(x) &= \max_{\text{relaxed }E}\left\{ \frac{P_E(S \wedge E=A)}{P_E(S)}: \frac{P_E(S \wedge B=A)}{P_E(S)} \ge x\right\}\\
+        &= \max_{\text{relaxed }E}\left\{ \frac{P_E(S \wedge E=A)}{P_E(S)}: \frac{P_E(S \wedge B=A)}{P_E(S)} \ge x, P_E(S)=1\right\}\\
+        &= \max_{\text{relaxed }E}\left\{ P_E(S \wedge E=A): P_E(S \wedge B=A) \ge x, P_E(S)=1\right\}.
+    \end{split}
+\end{equation}
+The last formulation of $y(x)$ is SDP. From the optimal relaxed $E$ we get the original and $P_E(S)$ by reassuring that $\tr_{B}(M) = \Id_A$.  
+
+\subsection{RK: Proposition of the goal}
+Compute:
+\begin{equation}
+    z(x) = \inf_{y \in \text{QKD-1q}} y(x).
+\end{equation}
+
+Is there a $\epsilon-$good strategy $y_*$ such that $\|z-y_*\|\le \epsilon$?
+
+\subsubsection{Optimal minimal case}
+Minimal case equal $L_a=2$ and $L_b=3$ with $x=2$, where optimal seems to be
+\begin{itemize}
+    \item $P(1)=P(2)=1/2$
+    \item $\ket{\psi_1}=\ket{0}, \ket{\psi_2}=\sqrt{1-\epsilon}\ket{0}+\sqrt{\epsilon}\ket{1}$
+    \item $\Omega = \{c\proj{\psi_1^\perp}, c\proj{\psi_2^\perp}, \rho_\epsilon\}$
+\end{itemize}
+for $\epsilon\to0$.
+
+\section{Theoretical implementation}\label{sec-implementation-theory}
+\todo[inline]{Celem rozdziału jest zaproponowanie procedury realizujacej QKD-1q zgodnie z wymaganiami i mozliwosciami firmy X. W tym rozdziale stosujemy opis warstwe teoretyczna procedury, np. implementacja magicznych stanow wymgaja splatania i destylacji -> nalzey inkorporowac to do QKD-1q. Przyklad: BB84 -> detBB84, entanglement BB84}
+
+\section{Practical implementation}\label{sec-implemntation-practice}
+
+\section{Error correction and privacy amplification}\label{sec-ec-pa}
+\newpage
+
+\appendix
+
+
+\section{QKD-1q protocol standardization}\label{sec-qkd-standard}
+
+In the QKD-1q protocol, we assume three parties: Alice, Bob, and Eve. Alice and Bob use a QKD protocol to share a bit of secret key. They can use only single-qubit transmission, and arbitrary classical communication is allowed. Eve is eavesdropping the protocol. We assume, as usual, that the classical communication is public, that is, Eve receives all messages. Quantum communication is potentially private, but is vulnerable to Eve attacks. 
+
+
+Assume that $\AA = \BB = \C^2$. 
+Alice randomly generates $r_a$, whereas Bob generates $r_b$.
+Alice generates a corresponding quantum state $\ket{\psi_{r_a}} \in \AA \otimes \BB$. We can assume that $\ket{\psi_{r_a}} $ is a mixed state realizing by a pure state with additional randomness on Alice side. Next, the qubit $\ket{\psi_{r_a}}_\BB$ is sent to Bob.
+Bob announces that he received the state. Eve can intercept the transmission and change it up to her will. Alice and Bob can perform a LOCC quantum channel on $\AA \otimes \BB$. This can be implemented equivalently by independent choice of local operations on Alice and Bob sides followed up by post-processing. No more operations are proceed, hence the local operations are POVMs. Alice use the measurement $A_{r_a}$ and gets label $a$. Bob measures $b$ by using the measurement $B_{r_b}$. By classical communication the values of $r_a, r_b, a, b$ are investigated. As the result, the procedure is aborted or a bit of the key is generated.
+
+
+Observe that Alice has a initial distribution of $r_a$, then based on this she introduces $\ket{\psi_{r_a}}$ and $A_{r_a}$. The distribution of $a$ depends on them but can be apriori calculated. That means, Alice does not have to create entanglement but can send a prepared state $\ket{\psi_{a}} \in \BB $ to Bob.
+Bob generates POVM $B_{r_b}$ based on his own randomness, which is equivalent to implementing larger POVM $\Omega$. 
+
+
+ 
+\section*{Acknowledgements}
+
+  PL is supported by the Ministry of Education, Youth and Sports of the Czech Republic through the e-INFRA CZ (ID:90254), with the financial support of the European Union under the REFRESH – Research Excellence For REgionSustainability and
+High-tech Industries project number CZ.10.03.01/00/22\_003/0000048 via the Operational Programme Just Transition.  
+RK is supported by the European Union under the REFRESH – Research Excellence For REgionSustainability and
+High-tech Industries project number CZ.10.03.01/00/22\_003/0000048 via the Operational Programme Just Transition.  
+
+  
+\bibliographystyle{unsrt} 
+\bibliography{qkd.bib}
+\end{document}

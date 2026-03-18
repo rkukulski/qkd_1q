@@ -1,0 +1,25 @@
+\documentclass[border=2pt]{standalone}
+\usepackage{amsmath}
+\usepackage{graphicx} 
+\usepackage{qcircuit}
+\usepackage{physics}
+\usepackage{amsfonts}
+\input{qcircuit.tex}
+
+
+\begin{document}
+		\Qcircuit @C=1em @R=.7em {
+		\prepareC{\rho_{a}}	& \qw & \multigate{1}{E} 
+		& \gate{\Omega} & \measureD{b}[0] \cw   \\ \qw
+		 & & \pureghost{E} & \qw & \qw & \gate{\Upsilon_{f(a,b)}} & \measureD{e}[0] \cw
+	}
+
+ %    \Qcircuit @C=1em @R=.7em {
+ %    \multigate{1}{\rho_{r_A}}	& \qw & \qw
+	% 	& \multigate{1}{\Phi_{LOCC,r_A,r_B}}  & \measureD{a}[0] \cw   \\
+	% 	 \pureghost{\rho_{r_A}}	& \qw & \multigate{1}{E} 
+	% 	& \ghost{\Phi_{LOCC,r_A,r_B}} & \measureD{b}[0] \cw   \\ \qw
+	% 	 & & \pureghost{E} & \qw & \qw & \gate{\Upsilon_{f(r_A,r_B)}} & \measureD{e}[0] \cw
+	% }
+
+\end{document}

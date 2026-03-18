@@ -1,0 +1,23 @@
+\documentclass[border=2pt]{standalone}
+\usepackage{amsmath}
+\usepackage{graphicx} 
+\usepackage{qcircuit}
+\usepackage{physics}
+\usepackage{amsfonts}
+\usepackage[table]{xcolor}
+\input{qcircuit.tex}
+
+
+\begin{document}
+
+\begin{tabular}{ c|c|c|c|c| } 
+A / B &  \ket{0} & \ket{1} & \ket{+} & \ket{-} \\
+ \hline
+\ket{0} & \cellcolor[HTML]{AA0044} 1/8 & \cellcolor[HTML]{AA0044} 0 & 1/16 & 1/16  \\ \hline  
+ \ket{1} & \cellcolor[HTML]{AA0044} 0 & \cellcolor[HTML]{AA0044} 1/8 & 1/16 & 1/16  \\ \hline 
+\ket{+} & 1/16 & 1/16 & \cellcolor[HTML]{AA0044} 1/8 & \cellcolor[HTML]{AA0044} 0 \\  \hline
+\ket{-} & 1/16 & 1/16 & \cellcolor[HTML]{AA0044} 0 & \cellcolor[HTML]{AA0044} 1/8 \\ \hline
+\end{tabular}
+
+
+\end{document}
