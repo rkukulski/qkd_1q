@@ -76,6 +76,52 @@ function P_eps(qkd::QKDProtocol, x::Real; tol=1e-7)
     return problem.optval
 end
 
+function P_eps_diagnostics(qkd::QKDProtocol, x::Real; tol=1e-7)
+    QS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][b] for i=1:qkd.N, a=1:2, b=1:2)
+    WS = sum(conj.(qkd.A[i][a]) ⊗ qkd.B[i][a] for i=1:qkd.N, a=1:2)
+
+    J = ComplexVariable(4,4)
+    constraints = Constraint[]
+    push!(constraints, isposdef(J))
+    push!(constraints, partialtrace(J, 2, [2,2]) == I(2))
+    c_active = real(tr(J*WS)) >= x*real(tr(J*QS))
+    push!(constraints, c_active)
+
+    f = real(tr(J*QS))
+    problem = minimize(f, constraints)
+
+    with_logger(ConsoleLogger(stderr, Logging.Error)) do
+        solve!(
+            problem,
+            MOI.OptimizerWithAttributes(
+                Clarabel.Optimizer,
+                "tol_gap_abs" => tol,
+                "tol_gap_rel" => tol,
+                "tol_feas" => tol,
+                "verbose" => false
+            )
+        )
+    end
+    if problem.status != MOI.OPTIMAL && problem.status != MOI.ALMOST_OPTIMAL
+        @warn "P_eps_diagnostics problem not solved optimally: $(problem.status)"
+    end
+
+    Jv = evaluate(J)
+    lhs = real(tr(Jv * WS))
+    rhs = float(x) * real(tr(Jv * QS))
+    slack = lhs - rhs
+    lambda_dual = hasproperty(c_active, :dual) ? float(c_active.dual) : NaN
+
+    return (
+        p = float(problem.optval),
+        lambda_dual = lambda_dual,
+        slack = float(slack),
+        lhs = float(lhs),
+        rhs = float(rhs),
+        status = string(problem.status),
+    )
+end
+
 function min_PE_eps(qkd::QKDProtocol, x::Real; tol=1e-7)
     # Eve[i][e] = (BI_in ⊗ BI_out) 
 

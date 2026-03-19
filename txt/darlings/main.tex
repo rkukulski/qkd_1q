@@ -652,9 +652,152 @@ interface expected from the codebase.
     \item \texttt{validation\_curves.pdf}/\texttt{validation\_curves.png} and
     \texttt{validation\_gaps.pdf}/\texttt{validation\_gaps.png}:
     manuscript-ready plots generated from \texttt{validation\_points.csv}.
+    \item \texttt{n1\_points.csv}, \texttt{n1\_summary.csv},
+    \texttt{n1\_meta.json}:
+    Sprint 2A N=1 theorem-draft falsification artifacts generated on the
+    $\epsilon$ grid with step $0.005$.
+    \item \texttt{upper\_bound\_audit.csv}: row-wise verification that
+    \texttt{upper\_bound} dominates \texttt{case1/case2/case3} over the same
+    grid, with violation tolerance reported in \texttt{n1\_summary.csv}.
+    \item \texttt{n1\_theorem\_curves.pdf}/\texttt{n1\_theorem\_curves.png}
+    and
+    \texttt{n1\_theorem\_mismatch.pdf}/\texttt{n1\_theorem\_mismatch.png}:
+    manuscript-ready Sprint 2A plots generated from \texttt{n1\_points.csv}.
+    \item \texttt{n1\_proof\_diagnostics.csv} and
+    \texttt{n1\_proof\_diagnostics\_summary.csv}: Sprint 2B diagnostics for
+    local optimality and SKR decomposition consistency in the positive-rate
+    N=1 regime.
 \end{itemize}
 The accepted schema is the contract for subsequent automation of manuscript
 tables and comparison figures.
+
+\subsection{N=1 optimality theorem (draft)}
+For the one-parameter family used in \texttt{case1}, we evaluate a draft
+closed-form expression against independent numerical optimizers and a dense
+scan baseline.
+\begin{equation}
+R_{N=1}^{\mathrm{draft}}(\epsilon) =
+R_0\max\left(1-\frac{\epsilon}{\epsilon_c},0\right)^\alpha,
+\end{equation}
+with fixed constants
+$R_0=0.893925772022$, $\epsilon_c=0.07$, and $\alpha=8$.
+
+\paragraph{Theorem (draft, N=1).}
+For $\epsilon \in [0,0.25]$, the draft candidate above is proposed as an
+analytic surrogate for the restart-best numerical optimum in the N=1 family.
+This statement is intentionally marked as a draft theorem and is supported by
+explicit falsification diagnostics rather than a completed proof.
+
+\paragraph{Proposition 1 (proved: parametric reduction).}
+Within \texttt{case1}, protocol optimization reduces to a scalar search over
+$x>0$ (equivalently $u=\log_{10}(x)$).
+\textit{Proof sketch.}
+The constructor \texttt{build\_case1\_protocol(x)} fixes
+$p=(1,1)$, $q=(1)$, and states
+$\ket{\psi_{1,0}}=(1,0)^T$, $\ket{\psi_{1,1}}=(1,x)^T$ up to normalization.
+No additional free protocol parameters remain, so the outer family search is
+one-dimensional.
+
+\paragraph{Lemma 2 (KKT active-constraint criterion, draft).}
+For fixed $x$ and $\epsilon$, define
+\begin{equation}
+    \begin{split}
+        \PP_\epsilon(S,x)=\min_{J \succeq 0}\ &\mathrm{tr}(JQ_S)\\
+        \mathrm{s.t.}\quad &\mathrm{Tr}_B(J)=I_2,\\
+        &g_x(J):=
+        \mathrm{tr}(JW_S)-x\,\mathrm{tr}(JQ_S)\ge 0.
+    \end{split}
+\end{equation}
+Let $(J_x^\star,\lambda_x^\star,Y_x^\star,Z_x^\star)$ satisfy KKT conditions,
+including
+\begin{equation}
+\lambda_x^\star g_x(J_x^\star)=0,\quad \lambda_x^\star \ge 0.
+\end{equation}
+Therefore, a proof that $\lambda_x^\star>0$ on the positive-rate region implies
+that the Bob-agreement inequality is active:
+$g_x(J_x^\star)=0$.
+
+\paragraph{Remaining proof tasks.}
+\begin{enumerate}
+    \item \textbf{TODO-PROOF (Lemma 2 closure).} Prove $\lambda_x^\star>0$
+    for positive-rate N=1 rows or state explicit counter-conditions.
+    \item \textbf{Lemma 3 (TODO-PROOF: envelope regularity).} Establish the
+    piecewise-smooth envelope conditions that motivate the
+    $R_0,\epsilon_c,\alpha$ form.
+    \item \textbf{Lemma 4 (TODO-PROOF: converse consistency).} Connect the
+    fitted N=1 envelope to a rigorously stated upper-bound family and isolate
+    the gap term.
+\end{enumerate}
+
+Sprint 2A evidence is summarized in
+Table~\ref{tab:n1-theorem-summary} and
+Figure~\ref{fig:n1-theorem-curves}. Full epsilon-grid rows are provided in
+Table~\ref{tab:n1-theorem-grid-full-appendix}. Bound-audit diagnostics are
+reported from \texttt{upper\_bound\_audit.csv}; for broad context on
+capacity-style converse limits we refer to \cite{PirandolaAOP2020}.
+Sprint 2B diagnostics are summarized in
+Table~\ref{tab:n1-proof-diagnostics}. The decomposition mismatch is concentrated
+at $\epsilon=0$, while local optimality checks pass on all positive-rate rows.
+KKT dual multipliers are positive on all positive-rate rows, and active
+sensitivity passes on 7/8 rows; the outlier is the boundary point
+$\epsilon=0$ where $x_{\mathrm{active}}\approx 1$.
+Lemma 2 is therefore supported on interior positive-rate points but remains
+open at the boundary.
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Sprint 2A N=1 theorem-draft evidence summary (rounded to 6 decimals).}
+\label{tab:n1-theorem-summary}
+\begin{tabular}{lc}
+\hline
+Metric & Value \\
+\hline
+max $|$numeric-scan$|$ & 0.000000 \\
+mean $|$numeric-scan$|$ & 0.000000 \\
+max $|$numeric-formula$|$ & 0.235688 \\
+mean $|$numeric-formula$|$ & 0.007972 \\
+target max $|$numeric-scan$| \le 0.000500$ & met \\
+bound violations ($>10^{-7}$) & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Sprint 2B proof diagnostics
+(\texttt{local\_u\_step}=0.01, \texttt{x\_sensitivity\_step}=0.001).}
+\label{tab:n1-proof-diagnostics}
+\begin{tabular}{lc}
+\hline
+Metric & Value \\
+\hline
+positive-rate rows & 8 \\
+local-optimality pass ratio & 1.000000 \\
+active-sensitivity pass ratio & 0.875000 \\
+active-sensitivity pass ratio, $\epsilon>0$ & 1.000000 \\
+mean $(p_{\mathrm{plus}}-p_{\mathrm{active}})$ & 0.000963 \\
+lambda-positive ratio & 1.000000 \\
+max $|\lambda_{\mathrm{d}}-\lambda_{\mathrm{fd}}|$ all & 2087.580366 \\
+max $|\lambda_{\mathrm{d}}-\lambda_{\mathrm{fd}}|$, $\epsilon>0$ & 0.010658 \\
+first zero-rate epsilon & 0.040000 \\
+$x$ monotone pre-zero & true \\
+max decomposition abs. error & 0.065128 \\
+max decomposition abs. error, $\epsilon>0$ & 0.000000 \\
+mean decomposition abs. error & 0.008141 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\linewidth]
+{../../results/sprint2_n1/n1_theorem_curves.pdf}
+\caption{Sprint 2A N=1 theorem-draft curves: restart-best numeric, dense scan,
+and draft formula.}
+\label{fig:n1-theorem-curves}
+\end{figure}
 
 \subsection{Validation summary (production grid)}
 We validated the numerical pipeline on $\epsilon \in [0, 0.25]$ with step
@@ -802,9 +945,75 @@ $\epsilon$ & case1\_R & case2\_R & case3\_R & upper\_bound & best\_case \\
 \end{tabular}
 \end{table*}
 
+\subsection{Full N=1 theorem-draft mismatch grid}
+\begin{table*}[p]
+\centering
+\scriptsize
+\caption{Full Sprint 2A N=1 mismatch rows from
+\texttt{results/sprint2\_n1/n1\_points.csv}.}
+\label{tab:n1-theorem-grid-full-appendix}
+\begin{tabular}{cccccc}
+\hline
+$\epsilon$ & numeric\_R & scan\_R & formula\_R & $|$n-s$|$ & $|$n-f$|$ \\
+\hline
+0.000000 & 0.896954 & 0.896954 & 0.893926 & 0.000000 & 0.003028 \\
+0.005000 & 0.258422 & 0.258422 & 0.494110 & 0.000000 & 0.235688 \\
+0.010000 & 0.153844 & 0.153844 & 0.260452 & 0.000000 & 0.106608 \\
+0.015000 & 0.096190 & 0.096190 & 0.129843 & 0.000000 & 0.033653 \\
+0.020000 & 0.060359 & 0.060359 & 0.060573 & 0.000000 & 0.000214 \\
+0.025000 & 0.036952 & 0.036952 & 0.026075 & 0.000000 & 0.010877 \\
+0.030000 & 0.020692 & 0.020692 & 0.010162 & 0.000000 & 0.010530 \\
+0.035000 & 0.008187 & 0.008187 & 0.003492 & 0.000000 & 0.004695 \\
+0.040000 & 0.000000 & 0.000000 & 0.001017 & 0.000000 & 0.001017 \\
+0.045000 & 0.000000 & 0.000000 & 0.000237 & 0.000000 & 0.000237 \\
+0.050000 & 0.000000 & 0.000000 & 0.000040 & 0.000000 & 0.000040 \\
+0.055000 & 0.000000 & 0.000000 & 0.000004 & 0.000000 & 0.000004 \\
+0.060000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.065000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.070000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.075000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.080000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.085000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.090000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.095000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.100000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.105000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.110000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.115000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.120000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.125000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.130000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.135000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.140000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.145000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.150000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.155000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.160000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.165000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.170000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.175000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.180000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.185000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.190000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.195000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.200000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.205000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.210000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.215000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.220000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.225000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.230000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.235000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.240000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.245000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+0.250000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 & 0.000000 \\
+\hline
+\end{tabular}
+\end{table*}
+
 \clearpage
 \bibliographystyle{ieeetr}
-\bibliography{qkd.bib}
+\bibliography{qkd}
 
 \section*{Acknowledgements}
   PL is supported by the Ministry of Education, Youth and Sports of the Czech
